@@ -31,5 +31,4 @@ O solver executa por 5 segundos e exibe a grade de horarios otimizada no console
 
 - `domain/` -- classes do modelo de dominio (Lesson, Timeslot, Room, Semester, Subject)
 - `solver/` -- configuracao de restricoes do Timefold (`TimetableConstraintProvider`)
-- `demo/` -- geracao de dados de exemplo para um semestre letivo
 - `TimetableApp.java` -- ponto de entrada da aplicacao
