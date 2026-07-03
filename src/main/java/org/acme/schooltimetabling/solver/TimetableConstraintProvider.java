@@ -2,6 +2,7 @@ package org.acme.schooltimetabling.solver;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -20,11 +21,12 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 // HARD
                 roomConflict(factory),
                 backToBackLessons(factory),
-                teacherCantDay(factory, "Vanessa", DayOfWeek.FRIDAY),
-                teacherCantDay(factory, "Alisson", DayOfWeek.MONDAY),
+                teacherCantDay(factory, "Rodolfo", DayOfWeek.FRIDAY),
+                
                 // SOFT
                 weeklySpread(factory),
                 favoredUc(factory),
+                teacherSpreadWeek(factory)
         };
     }
 
@@ -101,9 +103,21 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 return dayDiff % 7 == 0 && dayDiff > 0;
                 })
         .reward(HardSoftScore.ONE_SOFT,
-        (l1, l2) -> 3)
+        (l1, l2) -> 5)
         .asConstraint("Simetric spread of classes per week");
         }
+
+    Constraint teacherSpreadWeek(ConstraintFactory factory){
+        return factory.forEach(Lesson.class)
+        .groupBy(
+                lesson -> lesson.getTimeslot().getWeekOfYear(),
+                ConstraintCollectors.countDistinct(Lesson::getTeacher)
+        )
+        .filter((week, teacherCount) -> teacherCount < 4)
+        .penalize(HardSoftScore.ONE_SOFT,
+                (week, teacherCount) -> 30)
+        .asConstraint("All teachers must give a class on a given week");
+    }
 
     Constraint favoredUc(ConstraintFactory factory) {
         // Each lesson should be spread evenly across the weeks of the semester.
@@ -116,4 +130,5 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         return 52 - lesson.getTimeslot().getWeekOfYear();
         }).asConstraint("UC algoritmos deve terminar antes");
         }
+
 }
