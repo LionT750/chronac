@@ -1,55 +1,35 @@
-# School Timetabling (Java, Maven or Gradle)
+# Alocacao de Horarios Escolares
 
-Assign lessons to timeslots and rooms to produce a better schedule for teachers and students.
+Sistema de otimizacao de horarios academicos que utiliza o motor de restricoes do Timefold Solver para alocar automaticamente disciplinas em horarios e salas, respeitando restricoes rigidas (conflitos de horario) e maximizando preferencias (distribuicao semanal, horarios preferenciais).
 
-## Constraints
+Tecnologias: Java 21, Timefold Solver 2.2.0, Maven.
 
-| Name                          | Level | Description                                                                   |
-|-------------------------------|-------|-------------------------------------------------------------------------------|
-| Room conflict                 | Hard  | Two lessons cannot be scheduled in the same room at the same time.            |
-| Teacher conflict              | Hard  | A teacher cannot teach two lessons at the same time.                          |
-| Student group conflict        | Hard  | A student group cannot attend two lessons at the same time.                   |
-| Teacher room stability        | Soft  | A teacher should teach all their lessons in the same room.                    |
-| Teacher time efficiency       | Soft  | A teacher should have consecutive lessons to minimize gaps in their schedule. |
-| Student group subject variety | Soft  | A student group should not have the same subject in consecutive timeslots.    |
+## Como executar
 
-- [Run the application](#run-the-application)
-
-## Prerequisites
-
-1. Install Java and Maven, for example with [Sdkman](https://sdkman.io):
+1. Instale Java 21 e Maven:
 
    ```sh
-   $ sdk install java
-   $ sdk install maven
+   sdk install java
+   sdk install maven
    ```
 
-## Run the application
-
-1. Git clone the timefold-quickstarts repo:
+2. Compile e gere o JAR executavel:
 
    ```sh
-   $ git clone https://github.com/TimefoldAI/timefold-quickstarts.git
-   ...
-   $ cd timefold-quickstarts/java/hello-world
+   mvn clean package
    ```
 
-2. Start the application with Maven:
+3. Execute a aplicacao:
 
    ```sh
-   $ mvn verify
-   ...
-   $ java -jar target/hello-world-run.jar
+   java -jar target/hello-world-run.jar
    ```
 
-   or with Gradle:
+O solver executa por 5 segundos e exibe a grade de horarios otimizada no console.
 
-   ```sh
-   $ gradle run
-   ```
+## Estrutura do projeto
 
-Look for the planning solution in the console log.
-
-## More information
-
-Visit [timefold.ai](https://timefold.ai).
+- `domain/` -- classes do modelo de dominio (Lesson, Timeslot, Room, Semester, Subject)
+- `solver/` -- configuracao de restricoes do Timefold (`TimetableConstraintProvider`)
+- `demo/` -- geracao de dados de exemplo para um semestre letivo
+- `TimetableApp.java` -- ponto de entrada da aplicacao
