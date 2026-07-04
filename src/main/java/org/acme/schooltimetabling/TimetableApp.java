@@ -53,8 +53,8 @@ public class TimetableApp {
 
     public static Timetable generateDemoData(DemoData demoData) {
         Semester semester = new Semester(
-                java.time.LocalDate.of(2026, 3, 23),
-                java.time.LocalDate.of(2026, 9, 7),
+                java.time.LocalDate.of(2026, 3, 22),
+                java.time.LocalDate.of(2026, 8, 7),
                 Collections.emptyList());
         List<Timeslot> timeslots = new ArrayList<>();
         long nextTimeslotId = 0L;

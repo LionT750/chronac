@@ -103,7 +103,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 return dayDiff % 7 == 0 && dayDiff > 0;
                 })
         .reward(HardSoftScore.ONE_SOFT,
-        (l1, l2) -> 5)
+        (l1, l2) -> 3)
         .asConstraint("Simetric spread of classes per week");
         }
 
@@ -121,14 +121,18 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 
     Constraint favoredUc(ConstraintFactory factory) {
         // Each lesson should be spread evenly across the weeks of the semester.
-        return factory.forEach(Lesson.class)
-        .reward(HardSoftScore.ONE_SOFT,
-         lesson -> {
-        if (!"Algoritmos".equals(lesson.getSubject())) {
-            return 0;
-        }
-        return 52 - lesson.getTimeslot().getWeekOfYear();
-        }).asConstraint("UC algoritmos deve terminar antes");
+        return factory.forEachUniquePair(Lesson.class, Joiners.equal(lesson -> lesson.getTimeslot().getWeekOfYear()))
+        .filter((l1, l2) -> l1.getSubject().equals(l2.getSubject()))  
+        .reward(HardSoftScore.ONE_SOFT, (l1, l2) -> {
+                if ("Algoritmos".equals(l1.getSubject()))
+                        return 10;
+                if ("Requisitos".equals(l1.getSubject()))
+                        return 5;
+                if ("OOP".equals(l1.getSubject()))
+                        return 1;
+                return 0;
+        })
+        .asConstraint("UC algoritmos deve terminar antes");
         }
 
 }
