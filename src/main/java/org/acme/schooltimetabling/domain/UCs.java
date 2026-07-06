@@ -6,7 +6,6 @@ public class UCs {
 
     public Map<String, Subject> subjects;
     
-    @SuppressWarnings("null")
     UCs() {
         this.subjects = Map.of(
             "OOP", new Subject("OOP", 96, "Alisson"),

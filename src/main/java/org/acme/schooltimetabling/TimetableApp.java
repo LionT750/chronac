@@ -8,16 +8,11 @@ import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.solver.TimetableConstraintProvider;
-import org.acme.schooltimetabling.domain.Semester;
-import org.acme.schooltimetabling.domain.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.time.LocalTime;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,10 +21,6 @@ public class TimetableApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TimetableApp.class);
 
-    public enum DemoData {
-        SMALL,
-        LARGE
-    }
 
     public static void main(String[] args) {
         SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
@@ -41,7 +32,11 @@ public class TimetableApp {
                 .withTerminationSpentLimit(Duration.ofSeconds(30)));
 
         // Load the problem
-        Timetable problem = generateDemoData(DemoData.SMALL);
+        Timetable problem = new Timetable.Builder(LocalDate.of(2026, 3, 23), LocalDate.of(2026, 8, 7))
+                .withName("Demo Timetable")             
+                .withRooms(List.of(
+                        new Room(Long.toString(1L), "Sala 114")))
+                .build();
 
         // Solve the problem
         Solver<Timetable> solver = solverFactory.buildSolver();
@@ -51,36 +46,6 @@ public class TimetableApp {
         printTimetable(solution);
     }
 
-    public static Timetable generateDemoData(DemoData demoData) {
-        Semester semester = new Semester(
-                java.time.LocalDate.of(2026, 3, 22),
-                java.time.LocalDate.of(2026, 8, 7),
-                Collections.emptyList());
-        List<Timeslot> timeslots = new ArrayList<>();
-        long nextTimeslotId = 0L;
-
-        for (LocalDate validDay : semester.getValidClassDays()) {
-            timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), validDay, validDay.getDayOfWeek(), LocalTime.of(18, 40), LocalTime.of(22, 00)));
-        }
-
-        List<Room> rooms = new ArrayList<>(1);
-        long nextRoomId = 0L;
-        rooms.add(new Room(Long.toString(nextRoomId++), "Sala 114"));
-    
-        List<Lesson> lessons = new ArrayList<>();
-        long nextLessonId = 0L;
-        
-        for (Map.Entry<String, Subject> entry : semester.getCurriculum().subjects.entrySet()) {
-            String subject = entry.getKey();
-            Subject subjectObject = entry.getValue();
-            int hours = subjectObject.getTotalHours();
-            int lessonsCount = hours / 4; // Each lesson is of a specific duration
-            for (int i = 0; i < lessonsCount; i++) {
-                lessons.add(new Lesson(Long.toString(nextLessonId++), subject, subjectObject.getTeacher(), null, null));
-            }
-        }
-        return new Timetable(demoData.name(), timeslots, rooms, lessons);
-    }
 
     private static void printTimetable(Timetable timetable) {
     LOGGER.info("========== SOLUTION SUMMARY ==========");
