@@ -16,6 +16,7 @@
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.junit.jupiter>6.1.0</version.org.junit.jupiter>
     <version.ch.qos.logback>1.5.34</version.ch.qos.logback>
+    <version.com.fasterxml.jackson>2.18.2</version.com.fasterxml.jackson>
 
     <version.compiler.plugin>3.15.0</version.compiler.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
@@ -55,6 +56,16 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${version.com.fasterxml.jackson}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${version.com.fasterxml.jackson}</version>
     </dependency>
 
     <!-- Testing -->
