@@ -20,11 +20,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 // HARD
                 roomConflict(factory),
                 backToBackLessons(factory),
-                teacherCantDay(factory, "Vanessa", DayOfWeek.FRIDAY),
-                teacherCantDay(factory, "Alisson", DayOfWeek.MONDAY),
+                teacherCantDay(factory, "Rodolfo", DayOfWeek.FRIDAY),
+                
                 // SOFT
-                weeklySpread(factory),
-                favoredUc(factory),
         };
     }
 
@@ -61,22 +59,6 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         .penalize(HardSoftScore.ONE_HARD)
         .asConstraint("Back to back lessons");
         }
-    
-
-     Constraint weekWithoutLesson(ConstraintFactory factory) {
-        // Each lesson should be spread evenly across the weeks of the semester.
-        return factory.forEachUniquePair(Lesson.class,
-        Joiners.equal(Lesson::getTeacher))
-        .filter((l1, l2) -> {
-                long dayDiff = Math.abs(ChronoUnit.DAYS.between(
-                        l1.getTimeslot().getDate(),
-                        l2.getTimeslot().getDate()
-                ));
-                return dayDiff > 7;
-                })
-        .reward(HardSoftScore.ONE_HARD)
-        .asConstraint("Teachers should not have a week without lessons");
-        }
 
       Constraint teacherCantDay(ConstraintFactory factory, String teacher, DayOfWeek dayOfWeek) {
         // Each lesson should be spread evenly across the weeks of the semester.
@@ -89,31 +71,6 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     // SOFT CONSTRAINTS
     // -------------------------
 
-    Constraint weeklySpread(ConstraintFactory factory) {
-        // Each lesson should be spread evenly across the weeks of the semester.
-        return factory.forEachUniquePair(Lesson.class,
-        Joiners.equal(Lesson::getTeacher))
-        .filter((l1, l2) -> {
-                long dayDiff = Math.abs(ChronoUnit.DAYS.between(
-                        l1.getTimeslot().getDate(),
-                        l2.getTimeslot().getDate()
-                ));
-                return dayDiff % 7 == 0 && dayDiff > 0;
-                })
-        .reward(HardSoftScore.ONE_SOFT,
-        (l1, l2) -> 3)
-        .asConstraint("Simetric spread of classes per week");
-        }
+    
 
-    Constraint favoredUc(ConstraintFactory factory) {
-        // Each lesson should be spread evenly across the weeks of the semester.
-        return factory.forEach(Lesson.class)
-        .reward(HardSoftScore.ONE_SOFT,
-         lesson -> {
-        if (!"Algoritmos".equals(lesson.getSubject())) {
-            return 0;
-        }
-        return 52 - lesson.getTimeslot().getWeekOfYear();
-        }).asConstraint("UC algoritmos deve terminar antes");
-        }
 }
