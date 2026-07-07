@@ -10,6 +10,7 @@ import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.solver.TimetableConstraintProvider;
 import org.acme.schooltimetabling.domain.Semester;
 import org.acme.schooltimetabling.domain.Subject;
+import org.acme.schooltimetabling.rest.TimetableHttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,13 @@ public class TimetableApp {
 
         // Visualize the solution
         printTimetable(solution);
+
+        // Expose the solution via GET /api/timetable
+        try {
+            new TimetableHttpServer(solution).start(8080);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to start REST API.", e);
+        }
     }
 
     public static Timetable generateDemoData(DemoData demoData) {
