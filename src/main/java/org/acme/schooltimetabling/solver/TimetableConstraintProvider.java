@@ -2,15 +2,18 @@ package org.acme.schooltimetabling.solver;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import java.time.DayOfWeek;
+import java.util.HashSet;
+import java.util.Set;
+
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Week;
 import org.acme.schooltimetabling.solver.justifications.RoomConflictJustification;
 import org.jspecify.annotations.NonNull;
-
-import java.time.DayOfWeek;
-import java.time.temporal.ChronoUnit;
 
 public class TimetableConstraintProvider implements ConstraintProvider {
 
@@ -19,8 +22,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 // HARD
                 roomConflict(factory),
-                backToBackLessons(factory),
-                teacherCantDay(factory, "Rodolfo", DayOfWeek.FRIDAY),
+                teacherSpread(factory),
+                teacherDays(factory),
+                emptyWeek(factory)
                 
                 // SOFT
         };
@@ -45,27 +49,68 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Room conflict");
     }
 
-    Constraint backToBackLessons(ConstraintFactory factory) {
-        // Each lesson should be spread evenly across the weeks of the semester.
-        return factory.forEachUniquePair(Lesson.class,
-        Joiners.equal(Lesson::getTeacher))
-        .filter((l1, l2) -> {
-                long dayDiff = Math.abs(ChronoUnit.DAYS.between(
-                        l1.getTimeslot().getDate(),
-                        l2.getTimeslot().getDate()
-                ));
-                return dayDiff == 1;
-        })
+
+
+      Constraint noMoreEmptyLessons(ConstraintFactory factory) {
+        return factory.forEach(Lesson.class)
+        .filter((lesson) -> lesson.getTimeslot() == null)
         .penalize(HardSoftScore.ONE_HARD)
-        .asConstraint("Back to back lessons");
+        .asConstraint("No empty lessons");
         }
 
-      Constraint teacherCantDay(ConstraintFactory factory, String teacher, DayOfWeek dayOfWeek) {
-        // Each lesson should be spread evenly across the weeks of the semester.
+        Constraint teacherDays(ConstraintFactory factory) {
         return factory.forEach(Lesson.class)
-        .filter(lesson -> teacher.equals(lesson.getTeacher()) && dayOfWeek.equals(lesson.getTimeslot().getDayOfWeek()))
-        .penalize(HardSoftScore.ONE_HARD)
-        .asConstraint("Teacher " + teacher + " can't have lessons on " + dayOfWeek);
+                .groupBy(
+                        Lesson::getTeacher,
+                        ConstraintCollectors.toList()
+                )
+                .reward(HardSoftScore.ONE_SOFT,
+                        (teacher, lessons) -> {
+                                Set<DayOfWeek> days = new HashSet<>();
+
+                                for (Lesson lesson : lessons) {
+                                        days.add(lesson.getTimeslot().getDayOfWeek());
+                                }
+
+                                if (days.size() <= 2)
+                                        return 10;
+                                else
+                                        return 0;
+                        }
+                )
+                .asConstraint("teacherDays");
+}
+
+        Constraint teacherSpread(ConstraintFactory factory) {
+                return factory.forEach(Week.class)
+                        .join(
+                                Lesson.class,
+                                Joiners.equal(
+                                        Week::getWeekOfYear,
+                                        lesson -> lesson.getTimeslot().getWeekOfYear()
+                                )
+                        )
+                        .groupBy(
+                                (week, lesson) -> week,
+                                ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTeacher())
+                        )
+                        .filter((week, teacherCount) -> teacherCount < 4)
+                        .penalize(HardSoftScore.ONE_HARD)
+                        .asConstraint("Every week should have lessons from all teachers");
+                }
+
+
+        Constraint emptyWeek(ConstraintFactory factory) {
+        return factory.forEach(Week.class)
+                .ifNotExists(
+                        Lesson.class,
+                        Joiners.equal(
+                                Week::getWeekOfYear,
+                                lesson -> lesson.getTimeslot().getWeekOfYear()
+                        )
+                )
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("No empty weeks");
         }
     // -------------------------
     // SOFT CONSTRAINTS

@@ -12,6 +12,7 @@ public class Lesson {
 
     private String subject;
     private String teacher;
+    private Long weekOfyear;
 
     @PlanningVariable
     private Timeslot timeslot;
@@ -60,7 +61,12 @@ public class Lesson {
         return timeslot;
     }
 
+    public Long getWeekOfyear() {
+        return weekOfyear;
+    }
     public void setTimeslot(Timeslot timeslot) {
+        if (timeslot != null)
+            this.weekOfyear = timeslot.getWeekOfYear();
         this.timeslot = timeslot;
     }
 

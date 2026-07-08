@@ -32,6 +32,9 @@ public class Timetable {
     @ValueRangeProvider
     private List<Room> rooms;
 
+    @ProblemFactCollectionProperty
+    private List<Week> weeks;
+
     @PlanningEntityCollectionProperty
     private List<Lesson> lessons;
 
@@ -47,6 +50,7 @@ public class Timetable {
         this.timeslots = List.copyOf(builder.timeslots);
         this.rooms = List.copyOf(builder.rooms);
         this.lessons = List.copyOf(builder.lessons);
+        this.weeks = List.copyOf(builder.weeks);
         this.score = null;
     }
 
@@ -58,6 +62,7 @@ public class Timetable {
         private List<Timeslot> timeslots;
         private List<Room> rooms;
         private List<Lesson> lessons;
+        private List<Week> weeks;
 
         public Builder(LocalDate semesterStartDate, LocalDate semesterEndDate) {
             this.semester = new Semester(
@@ -122,12 +127,23 @@ public class Timetable {
             this.lessons = generatedLessons;
         }
 
+        private void createWeeks() {
+            this.weeks = semester.getValidClassDays()
+                    .stream()
+                    .map(date -> (long) date.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR))
+                    .distinct()
+                    .sorted()
+                    .map(Week::new)
+                    .toList();
+        }
+
         public Timetable build() {
             Objects.requireNonNull(name, "Name must be provided.");
             Objects.requireNonNull(rooms, "Rooms must be provided.");
 
             // Generate derived data automatically.
             createTimeslots();
+            createWeeks();
             createLessons();
 
             return new Timetable(this);
@@ -152,6 +168,10 @@ public class Timetable {
 
     public List<Lesson> getLessons() {
         return lessons;
+    }
+
+    public List<Week> getWeeks() {
+        return weeks;
     }
 
     public HardSoftScore getScore() {
