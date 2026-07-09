@@ -30,10 +30,10 @@ public class TimetableApp {
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
                 // The solver runs only for 5 seconds on this small dataset.
                 // It's recommended to run for at least 5 minutes ("5m") otherwise.
-                .withTerminationSpentLimit(Duration.ofSeconds(5 * 60)));
+                .withTerminationSpentLimit(Duration.ofSeconds(60)));
 
         // Load the problem
-        Timetable problem = new Timetable.Builder(LocalDate.of(2026, 3, 23), LocalDate.of(2026, 8, 13))
+        Timetable problem = new Timetable.Builder(LocalDate.of(2026, 3, 23), LocalDate.of(2026, 8, 8))
                 .withName("Demo Timetable")             
                 .withRooms(List.of(
                         new Room(Long.toString(1L), "Sala 114")))

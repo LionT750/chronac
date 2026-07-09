@@ -5,10 +5,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import java.time.DayOfWeek;
-import java.util.HashSet;
-import java.util.Set;
-
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Week;
@@ -22,9 +18,10 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 // HARD
                 roomConflict(factory),
-                teacherSpread(factory),
-                teacherDays(factory),
-                emptyWeek(factory)
+                dayOfWeekTeacherConsistency(factory),
+                weeklyTeacherVariety(factory),
+                consecutiveWeeksSameWeekday(factory),
+                fullWeekCoverage(factory)
                 
                 // SOFT
         };
@@ -48,69 +45,54 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .justifyWith((lesson1, lesson2, score) -> new RoomConflictJustification(lesson1.getRoom(), lesson1, lesson2))
                 .asConstraint("Room conflict");
     }
-
-
-
-      Constraint noMoreEmptyLessons(ConstraintFactory factory) {
-        return factory.forEach(Lesson.class)
-        .filter((lesson) -> lesson.getTimeslot() == null)
-        .penalize(HardSoftScore.ONE_HARD)
-        .asConstraint("No empty lessons");
-        }
-
-        Constraint teacherDays(ConstraintFactory factory) {
+    
+        Constraint dayOfWeekTeacherConsistency(ConstraintFactory factory) {
         return factory.forEach(Lesson.class)
                 .groupBy(
-                        Lesson::getTeacher,
-                        ConstraintCollectors.toList()
+                        lesson -> lesson.getTimeslot().getDayOfWeek(),
+                        ConstraintCollectors.countDistinct(Lesson::getTeacher)
                 )
-                .reward(HardSoftScore.ONE_SOFT,
-                        (teacher, lessons) -> {
-                                Set<DayOfWeek> days = new HashSet<>();
+                .penalize(HardSoftScore.ONE_SOFT,
+                        (dayOfWeek, teacherCount) -> (teacherCount - 1) * 5)
+                .asConstraint("Consistent teacher per weekday slot");
+        }
 
-                                for (Lesson lesson : lessons) {
-                                        days.add(lesson.getTimeslot().getDayOfWeek());
-                                }
-
-                                if (days.size() <= 2)
-                                        return 10;
-                                else
-                                        return 0;
-                        }
-                )
-                .asConstraint("teacherDays");
-}
-
-        Constraint teacherSpread(ConstraintFactory factory) {
+        Constraint weeklyTeacherVariety(ConstraintFactory factory) {
                 return factory.forEach(Week.class)
-                        .join(
-                                Lesson.class,
-                                Joiners.equal(
-                                        Week::getWeekOfYear,
-                                        lesson -> lesson.getTimeslot().getWeekOfYear()
-                                )
-                        )
-                        .groupBy(
-                                (week, lesson) -> week,
-                                ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTeacher())
-                        )
-                        .filter((week, teacherCount) -> teacherCount < 4)
-                        .penalize(HardSoftScore.ONE_HARD)
-                        .asConstraint("Every week should have lessons from all teachers");
+                        .join(Lesson.class,
+                                Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
+                        .groupBy((week, lesson) -> week,
+                                ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTeacher()))
+                        .reward(HardSoftScore.ONE_SOFT, (week, teacherCount) -> teacherCount)
+                        .asConstraint("Weekly teacher variety");
                 }
 
-
-        Constraint emptyWeek(ConstraintFactory factory) {
+        Constraint fullWeekCoverage(ConstraintFactory factory) {
         return factory.forEach(Week.class)
+                .join(Lesson.class,
+                        Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
+                .groupBy((week, lesson) -> week,
+                        ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTimeslot().getDayOfWeek()))
+                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * (5 - dayCount))
+                .asConstraint("Full week coverage");
+        }
+
+        Constraint consecutiveWeeksSameWeekday(ConstraintFactory factory) {
+        return factory.forEach(Lesson.class)
                 .ifNotExists(
                         Lesson.class,
+                        Joiners.equal(Lesson::getTeacher),
                         Joiners.equal(
-                                Week::getWeekOfYear,
+                                lesson -> lesson.getTimeslot().getWeekOfYear() + 1,
                                 lesson -> lesson.getTimeslot().getWeekOfYear()
+                        ),
+                        Joiners.equal(
+                                lesson -> lesson.getTimeslot().getDayOfWeek(),
+                                lesson -> lesson.getTimeslot().getDayOfWeek()
                         )
                 )
-                .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("No empty weeks");
+                .penalize(HardSoftScore.ONE_SOFT, (lesson) -> 15)
+                .asConstraint("Teacher should teach on the same weekday in consecutive weeks");
         }
     // -------------------------
     // SOFT CONSTRAINTS
