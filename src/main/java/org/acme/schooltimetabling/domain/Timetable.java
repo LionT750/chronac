@@ -12,7 +12,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @PlanningSolution
@@ -105,20 +104,15 @@ public class Timetable {
             List<Lesson> generatedLessons = new ArrayList<>();
             long nextLessonId = 0L;
 
-            for (Map.Entry<String, Subject> entry : semester.getCurriculum().subjects.entrySet()) {
-                String subject = entry.getKey();
-                Subject subjectObject = entry.getValue();
+            for (Subject subject : semester.getCurriculum().subjects.values()) {
 
-                int lessonCount = subjectObject.getTotalHours() / HOURS_PER_LESSON;
+                int lessonCount = subject.getTotalHours() / HOURS_PER_LESSON;
 
                 for (int i = 0; i < lessonCount; i++) {
                     generatedLessons.add(
                             new Lesson(
                                     Long.toString(nextLessonId++),
-                                    subject,
-                                    subjectObject.getTeacher(),
-                                    null,
-                                    null
+                                    subject
                             )
                     );
                 }

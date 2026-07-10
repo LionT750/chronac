@@ -1,7 +1,7 @@
 package org.acme.schooltimetabling.domain;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
@@ -10,9 +10,9 @@ public class Lesson {
     @PlanningId
     private String id;
 
-    private String subject;
-    private String teacher;
-    private Long weekOfyear;
+    private Subject subject;
+
+    private Long weekOfYear;
 
     @PlanningVariable
     private Timeslot timeslot;
@@ -20,62 +20,59 @@ public class Lesson {
     @PlanningVariable
     private Room room;
 
-    // No-arg constructor required for Timefold
+    // Required by Timefold
     public Lesson() {
     }
 
-    public Lesson(String id, String subject, String teacher) {
+    public Lesson(String id, Subject subject) {
         this.id = id;
         this.subject = subject;
-        this.teacher = teacher;
-    }
-
-    public Lesson(String id, String subject, String teacher, Timeslot timeslot, Room room) {
-        this(id, subject, teacher);
-        this.timeslot = timeslot;
-        this.room = room;
     }
 
     @Override
     public String toString() {
-        return subject + "(" + id + ")";
+        return subject.getName() + "(" + id + ")";
     }
 
     // ************************************************************************
-    // Getters and setters
+    // Getters
     // ************************************************************************
 
     public String getId() {
         return id;
     }
 
-    public String getSubject() {
+    public Subject getSubject() {
         return subject;
     }
 
     public String getTeacher() {
-        return teacher;
+        return subject.getTeacher();
     }
 
     public Timeslot getTimeslot() {
         return timeslot;
     }
 
-    public Long getWeekOfyear() {
-        return weekOfyear;
-    }
-    public void setTimeslot(Timeslot timeslot) {
-        if (timeslot != null)
-            this.weekOfyear = timeslot.getWeekOfYear();
-        this.timeslot = timeslot;
+    public Long getWeekOfYear() {
+        return weekOfYear;
     }
 
     public Room getRoom() {
         return room;
     }
 
+    // ************************************************************************
+    // Setters
+    // ************************************************************************
+
+    public void setTimeslot(Timeslot timeslot) {
+        this.timeslot = timeslot;
+        this.weekOfYear =
+                (timeslot == null) ? null : timeslot.getWeekOfYear();
+    }
+
     public void setRoom(Room room) {
         this.room = room;
     }
-
 }

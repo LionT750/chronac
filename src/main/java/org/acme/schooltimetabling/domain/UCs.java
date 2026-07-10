@@ -1,6 +1,7 @@
 package org.acme.schooltimetabling.domain;
 
 import java.util.Map;
+import java.util.List;
 
 public class UCs {
 
@@ -8,10 +9,10 @@ public class UCs {
     
     UCs() {
         this.subjects = Map.of(
-            "OOP", new Subject("OOP", 96, "Alisson"),
-            "Algoritmos", new Subject("Algoritmos", 124, "Rodolfo"),
-            "Banco de dados", new Subject("Banco de dados", 72, "Nelma"),
-            "Requisitos", new Subject("Requisitos", 108, "Vanessa")
+            "OOP", new Subject("OOP", 96, "Alisson",  List.of("Sala 114")),
+            "Algoritmos", new Subject("Algoritmos", 108, "Rodolfo", List.of("Sala 114")),
+            "Banco de dados", new Subject("Banco de dados", 72, "Nelma",List.of("Sala 114")),
+            "Requisitos", new Subject("Requisitos", 108, "Vanessa", List.of("Sala 114"))
         );
     }
 }

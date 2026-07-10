@@ -11,17 +11,30 @@ import org.acme.schooltimetabling.domain.Week;
 import org.acme.schooltimetabling.solver.justifications.RoomConflictJustification;
 import org.jspecify.annotations.NonNull;
 
+import java.time.DayOfWeek;
+import java.util.List;
+
 public class TimetableConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
+        List<DayOfWeek> days = List.of(
+        DayOfWeek.MONDAY,
+        DayOfWeek.TUESDAY,
+        DayOfWeek.WEDNESDAY,
+        DayOfWeek.THURSDAY,
+        DayOfWeek.FRIDAY
+        );
         return new Constraint[] {
                 // HARD
                 roomConflict(factory),
                 dayOfWeekTeacherConsistency(factory),
                 weeklyTeacherVariety(factory),
                 consecutiveWeeksSameWeekday(factory),
-                fullWeekCoverage(factory)
+                roomPerSubject(factory),
+
+                fullWeekCoverage(factory,days),
+                daysWithoutClass(factory,days)
                 
                 // SOFT
         };
@@ -45,6 +58,14 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .justifyWith((lesson1, lesson2, score) -> new RoomConflictJustification(lesson1.getRoom(), lesson1, lesson2))
                 .asConstraint("Room conflict");
     }
+
+        Constraint roomPerSubject(ConstraintFactory factory)
+        {
+                return factory.forEach(Lesson.class)
+                .filter(lesson -> lesson.getSubject().getDesignedRooms().contains(lesson.getRoom().getName()))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Cant have class in not allowed rooms");
+        }
     
         Constraint dayOfWeekTeacherConsistency(ConstraintFactory factory) {
         return factory.forEach(Lesson.class)
@@ -67,13 +88,20 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         .asConstraint("Weekly teacher variety");
                 }
 
-        Constraint fullWeekCoverage(ConstraintFactory factory) {
+        Constraint daysWithoutClass(ConstraintFactory factory, List<DayOfWeek> validDaysOfWeek){
+                return factory.forEach(Lesson.class)
+                .filter(lesson -> !validDaysOfWeek.contains(lesson.getTimeslot().getDayOfWeek()))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Only days which should have class are allowed");
+        }
+
+        Constraint fullWeekCoverage(ConstraintFactory factory, List<DayOfWeek> validDaysOfWeek) {
         return factory.forEach(Week.class)
                 .join(Lesson.class,
                         Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
                 .groupBy((week, lesson) -> week,
                         ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTimeslot().getDayOfWeek()))
-                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * (5 - dayCount))
+                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * Math.abs(validDaysOfWeek.size() - dayCount))
                 .asConstraint("Full week coverage");
         }
 
@@ -91,7 +119,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                                 lesson -> lesson.getTimeslot().getDayOfWeek()
                         )
                 )
-                .penalize(HardSoftScore.ONE_SOFT, (lesson) -> 15)
+                .penalize(HardSoftScore.ONE_SOFT, (lesson) -> 25)
                 .asConstraint("Teacher should teach on the same weekday in consecutive weeks");
         }
     // -------------------------
