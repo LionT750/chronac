@@ -12,7 +12,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @PlanningSolution
@@ -32,6 +31,9 @@ public class Timetable {
     @ValueRangeProvider
     private List<Room> rooms;
 
+    @ProblemFactCollectionProperty
+    private List<Week> weeks;
+
     @PlanningEntityCollectionProperty
     private List<Lesson> lessons;
 
@@ -47,6 +49,7 @@ public class Timetable {
         this.timeslots = List.copyOf(builder.timeslots);
         this.rooms = List.copyOf(builder.rooms);
         this.lessons = List.copyOf(builder.lessons);
+        this.weeks = List.copyOf(builder.weeks);
         this.score = null;
     }
 
@@ -58,6 +61,7 @@ public class Timetable {
         private List<Timeslot> timeslots;
         private List<Room> rooms;
         private List<Lesson> lessons;
+        private List<Week> weeks;
 
         public Builder(LocalDate semesterStartDate, LocalDate semesterEndDate) {
             this.semester = new Semester(
@@ -100,20 +104,15 @@ public class Timetable {
             List<Lesson> generatedLessons = new ArrayList<>();
             long nextLessonId = 0L;
 
-            for (Map.Entry<String, Subject> entry : semester.getCurriculum().subjects.entrySet()) {
-                String subject = entry.getKey();
-                Subject subjectObject = entry.getValue();
+            for (Subject subject : semester.getCurriculum().subjects.values()) {
 
-                int lessonCount = subjectObject.getTotalHours() / HOURS_PER_LESSON;
+                int lessonCount = subject.getTotalHours() / HOURS_PER_LESSON;
 
                 for (int i = 0; i < lessonCount; i++) {
                     generatedLessons.add(
                             new Lesson(
                                     Long.toString(nextLessonId++),
-                                    subject,
-                                    subjectObject.getTeacher(),
-                                    null,
-                                    null
+                                    subject
                             )
                     );
                 }
@@ -122,12 +121,23 @@ public class Timetable {
             this.lessons = generatedLessons;
         }
 
+        private void createWeeks() {
+            this.weeks = semester.getValidClassDays()
+                    .stream()
+                    .map(date -> (long) date.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR))
+                    .distinct()
+                    .sorted()
+                    .map(Week::new)
+                    .toList();
+        }
+
         public Timetable build() {
             Objects.requireNonNull(name, "Name must be provided.");
             Objects.requireNonNull(rooms, "Rooms must be provided.");
 
             // Generate derived data automatically.
             createTimeslots();
+            createWeeks();
             createLessons();
 
             return new Timetable(this);
@@ -152,6 +162,10 @@ public class Timetable {
 
     public List<Lesson> getLessons() {
         return lessons;
+    }
+
+    public List<Week> getWeeks() {
+        return weeks;
     }
 
     public HardSoftScore getScore() {

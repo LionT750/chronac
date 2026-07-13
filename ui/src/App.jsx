@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 function formatLesson(lesson) {
-  const t = lesson.timeslot
+  const t = lesson.timeslot;
+
   return {
-    date: t?.date ?? '-',
-    dayOfWeek: t?.dayOfWeek ?? '-',
-    time: t ? `${t.startTime?.slice(0, 5)} - ${t.endTime?.slice(0, 5)}` : '-',
-    subject: lesson.subject,
-    teacher: lesson.teacher,
-    room: lesson.room?.name ?? '-',
-  }
+    date: t?.date ?? "-",
+    dayOfWeek: t?.dayOfWeek ?? "-",
+    time: t ? `${t.startTime.slice(0, 5)} - ${t.endTime.slice(0, 5)}` : "-",
+    subject: lesson.subject?.name ?? "-",
+    teacher: lesson.teacher ?? "-",
+    room: lesson.room?.name ?? "-"
+  };
 }
 
 function App() {
