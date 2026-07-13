@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 function formatLesson(lesson) {
@@ -18,6 +18,10 @@ function App() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const [teacherFilter, setTeacherFilter] = useState('')
+  const [subjectFilter, setSubjectFilter] = useState('')
+  const [dayFilter, setDayFilter] = useState('')
+
   const fetchTimetable = () => {
     setLoading(true)
     setError(null)
@@ -34,7 +38,7 @@ function App() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: kick off the initial fetch on mount
   useEffect(fetchTimetable, [])
 
-  const lessons = (data?.lessons ?? [])
+  const allLessons = (data?.lessons ?? [])
     .slice()
     .sort((a, b) => {
       const ta = a.timeslot
@@ -43,6 +47,33 @@ function App() {
       return (ta.date + ta.startTime).localeCompare(tb.date + tb.startTime)
     })
     .map(formatLesson)
+
+  // Opções únicas para popular os selects, derivadas dos dados já formatados
+  const teacherOptions = useMemo(
+    () => [...new Set(allLessons.map((l) => l.teacher).filter(Boolean))].sort(),
+    [allLessons]
+  )
+  const subjectOptions = useMemo(
+    () => [...new Set(allLessons.map((l) => l.subject).filter(Boolean))].sort(),
+    [allLessons]
+  )
+  const dayOptions = useMemo(
+    () => [...new Set(allLessons.map((l) => l.dayOfWeek).filter(Boolean))].sort(),
+    [allLessons]
+  )
+
+  const lessons = allLessons.filter((l) => {
+    const matchesTeacher = !teacherFilter || l.teacher === teacherFilter
+    const matchesSubject = !subjectFilter || l.subject === subjectFilter
+    const matchesDay = !dayFilter || l.dayOfWeek === dayFilter
+    return matchesTeacher && matchesSubject && matchesDay
+  })
+
+  const clearFilters = () => {
+    setTeacherFilter('')
+    setSubjectFilter('')
+    setDayFilter('')
+  }
 
   return (
     <div id="debug-root">
@@ -61,7 +92,32 @@ function App() {
             <span><strong>Name:</strong> {data.name}</span>
             <span><strong>Score:</strong> {data.score?.hardScore}hard / {data.score?.softScore}soft</span>
             <span><strong>Feasible:</strong> {String(data.score?.feasible)}</span>
-            <span><strong>Lessons:</strong> {lessons.length}</span>
+            <span><strong>Lessons:</strong> {lessons.length} / {allLessons.length}</span>
+          </section>
+
+          <section className="filters">
+            <select value={teacherFilter} onChange={(e) => setTeacherFilter(e.target.value)}>
+              <option value="">Todos os professores</option>
+              {teacherOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+
+            <select value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+              <option value="">Todas as disciplinas</option>
+              {subjectOptions.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+
+            <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)}>
+              <option value="">Todos os dias</option>
+              {dayOptions.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+
+            <button type="button" onClick={clearFilters}>Limpar filtros</button>
           </section>
 
           <table>
