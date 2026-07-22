@@ -16,15 +16,12 @@ import java.util.List;
 
 public class TimetableConstraintProvider implements ConstraintProvider {
 
+    private static final List<DayOfWeek> VALID_DAYS = List.of(
+            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
+
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
-        List<DayOfWeek> days = List.of(
-        DayOfWeek.MONDAY,
-        DayOfWeek.TUESDAY,
-        DayOfWeek.WEDNESDAY,
-        DayOfWeek.THURSDAY,
-        DayOfWeek.FRIDAY
-        );
         return new Constraint[] {
                 // HARD
                 roomConflict(factory),
@@ -33,9 +30,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 consecutiveWeeksSameWeekday(factory),
                 roomPerSubject(factory),
 
-                fullWeekCoverage(factory,days),
-                daysWithoutClass(factory,days)
-                
+                fullWeekCoverage(factory),
+                daysWithoutClass(factory),
+
                 // SOFT
         };
     }
@@ -88,20 +85,20 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         .asConstraint("Weekly teacher variety");
                 }
 
-        Constraint daysWithoutClass(ConstraintFactory factory, List<DayOfWeek> validDaysOfWeek){
+        Constraint daysWithoutClass(ConstraintFactory factory){
                 return factory.forEach(Lesson.class)
-                .filter(lesson -> !validDaysOfWeek.contains(lesson.getTimeslot().getDayOfWeek()))
+                .filter(lesson -> !VALID_DAYS.contains(lesson.getTimeslot().getDayOfWeek()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Only days which should have class are allowed");
         }
 
-        Constraint fullWeekCoverage(ConstraintFactory factory, List<DayOfWeek> validDaysOfWeek) {
+        Constraint fullWeekCoverage(ConstraintFactory factory) {
         return factory.forEach(Week.class)
                 .join(Lesson.class,
                         Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
                 .groupBy((week, lesson) -> week,
                         ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTimeslot().getDayOfWeek()))
-                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * Math.abs(validDaysOfWeek.size() - dayCount))
+                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * Math.abs(VALID_DAYS.size() - dayCount))
                 .asConstraint("Full week coverage");
         }
 
