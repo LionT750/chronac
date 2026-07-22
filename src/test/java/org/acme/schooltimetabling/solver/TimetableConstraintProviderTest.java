@@ -1,8 +1,6 @@
 package org.acme.schooltimetabling.solver;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;

@@ -43,6 +43,18 @@ public class TimetableApp {
         Solver<Timetable> solver = solverFactory.buildSolver();
         Timetable solution = solver.solve(problem);
 
+        // Check for infeasibility
+        if (solution.getScore() != null && solution.getScore().hardScore() < 0) {
+            LOGGER.warn("========== INFEASIBLE SCHEDULE ==========");
+            LOGGER.warn("The solver could not satisfy all hard constraints.");
+            LOGGER.warn("Score: {}", solution.getScore());
+            LOGGER.warn("This means no valid timetable exists for the given input data.");
+            LOGGER.warn("Consider: adding more rooms/timeslots, reducing lesson count, or relaxing constraints.");
+            LOGGER.warn("=========================================");
+        } else {
+            LOGGER.info("Schedule is feasible. Score: {}", solution.getScore());
+        }
+
         // Visualize the solution
         printTimetable(solution);
 
