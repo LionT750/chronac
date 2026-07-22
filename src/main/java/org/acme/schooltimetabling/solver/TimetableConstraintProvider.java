@@ -62,7 +62,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         Constraint roomPerSubject(ConstraintFactory factory)
         {
                 return factory.forEach(Lesson.class)
-                .filter(lesson -> lesson.getSubject().getDesignedRooms().contains(lesson.getRoom().getName()))
+                .filter(lesson -> !lesson.getSubject().getDesignedRooms().contains(lesson.getRoom().getName()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Cant have class in not allowed rooms");
         }
