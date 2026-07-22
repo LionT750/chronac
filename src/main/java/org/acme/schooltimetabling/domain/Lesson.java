@@ -12,8 +12,6 @@ public class Lesson {
 
     private Subject subject;
 
-    private Long weekOfYear;
-
     @PlanningVariable
     private Timeslot timeslot;
 
@@ -54,10 +52,6 @@ public class Lesson {
         return timeslot;
     }
 
-    public Long getWeekOfYear() {
-        return weekOfYear;
-    }
-
     public Room getRoom() {
         return room;
     }
@@ -68,8 +62,6 @@ public class Lesson {
 
     public void setTimeslot(Timeslot timeslot) {
         this.timeslot = timeslot;
-        this.weekOfYear =
-                (timeslot == null) ? null : timeslot.getWeekOfYear();
     }
 
     public void setRoom(Room room) {
