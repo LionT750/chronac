@@ -62,7 +62,7 @@ public class Semester {
     }
 
     public Integer getSubjectHours(String subject) {
-        return curriculum.subjects.getOrDefault(subject, new Subject(subject, 0, "", null)).getTotalHours();
+        return curriculum.subjects.getOrDefault(subject, new Subject(subject, 0, "", null, null, null, null)).getTotalHours();
     }
 
     public Curriculum getCurriculum() {
