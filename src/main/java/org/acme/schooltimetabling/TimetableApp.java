@@ -28,15 +28,14 @@ public class TimetableApp {
                 .withSolutionClass(Timetable.class)
                 .withEntityClasses(Lesson.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
-                // The solver runs only for 5 seconds on this small dataset.
-                // It's recommended to run for at least 5 minutes ("5m") otherwise.
                 .withTerminationSpentLimit(Duration.ofSeconds(1 * 60)));
 
         // Load the problem
         Timetable problem = new Timetable.Builder(LocalDate.of(2026, 3, 23), LocalDate.of(2026, 8, 8))
-                .withName("Demo Timetable")             
+                .withName("MultiTurma Demo")             
                 .withRooms(List.of(
-                        new Room(Long.toString(1L), "Sala 114")))
+                        new Room(Long.toString(1L), "Sala 114"),
+                        new Room(Long.toString(2L), "Sala 115")))
                 .build();
 
         // Solve the problem
