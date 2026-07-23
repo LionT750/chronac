@@ -6,9 +6,11 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
+
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Week;
 import org.acme.schooltimetabling.solver.justifications.RoomConflictJustification;
+import org.acme.schooltimetabling.solver.justifications.TeacherConflictJustification;
 import org.jspecify.annotations.NonNull;
 
 import java.time.DayOfWeek;
@@ -25,10 +27,12 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 // HARD
                 roomConflict(factory),
-                dayOfWeekTeacherConsistency(factory),
+                teacherConflict(factory),
+                dayOfWeekSubjectConsistency(factory),
                 weeklyTeacherVariety(factory),
                 consecutiveWeeksSameWeekday(factory),
                 roomPerSubject(factory),
+                classesOnlyInBetweenSubjectDates(factory),
 
                 fullWeekCoverage(factory),
                 daysWithoutClass(factory),
@@ -56,6 +60,21 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Room conflict");
     }
 
+        Constraint teacherConflict(ConstraintFactory constraintFactory) {
+        // A room can accommodate at most one lesson at the same time.
+        return constraintFactory
+                // Select each pair of 2 different lessons ...
+                .forEachUniquePair(Lesson.class,
+                        // ... in the same timeslot ...
+                        Joiners.equal(Lesson::getTimeslot),
+                        // ... in the same room ...
+                        Joiners.equal(Lesson::getTeacher))
+                // ... and penalize each pair with a hard weight.
+                .penalize(HardSoftScore.ONE_HARD)
+                .justifyWith((lesson1, lesson2, score) -> new TeacherConflictJustification(lesson1.getTeacher(), lesson1, lesson2))
+                .asConstraint("Teacher conflict");
+        }
+
         Constraint roomPerSubject(ConstraintFactory factory)
         {
                 return factory.forEach(Lesson.class)
@@ -64,15 +83,15 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Cant have class in not allowed rooms");
         }
     
-        Constraint dayOfWeekTeacherConsistency(ConstraintFactory factory) {
+        Constraint dayOfWeekSubjectConsistency(ConstraintFactory factory) {
         return factory.forEach(Lesson.class)
                 .groupBy(
                         lesson -> lesson.getTimeslot().getDayOfWeek(),
-                        ConstraintCollectors.countDistinct(Lesson::getTeacher)
+                        ConstraintCollectors.countDistinct(Lesson::getSubject)
                 )
                 .penalize(HardSoftScore.ONE_SOFT,
-                        (dayOfWeek, teacherCount) -> (teacherCount - 1) * 5)
-                .asConstraint("Consistent teacher per weekday slot");
+                        (dayOfWeek, subjectCount) -> (subjectCount - 1) * 8)
+                .asConstraint("Consistent subject per weekday slot");
         }
 
         Constraint weeklyTeacherVariety(ConstraintFactory factory) {
@@ -87,7 +106,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 
         Constraint daysWithoutClass(ConstraintFactory factory){
                 return factory.forEach(Lesson.class)
-                .filter(lesson -> !VALID_DAYS.contains(lesson.getTimeslot().getDayOfWeek()))
+                .filter(lesson -> !lesson.getSubject().getDesignDayOfWeeks().contains(lesson.getTimeslot().getDayOfWeek()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Only days which should have class are allowed");
         }
@@ -106,7 +125,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         return factory.forEach(Lesson.class)
                 .ifNotExists(
                         Lesson.class,
-                        Joiners.equal(Lesson::getTeacher),
+                        Joiners.equal(Lesson::getSubject),
                         Joiners.equal(
                                 lesson -> lesson.getTimeslot().getWeekOfYear() + 1,
                                 lesson -> lesson.getTimeslot().getWeekOfYear()
@@ -117,8 +136,23 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         )
                 )
                 .penalize(HardSoftScore.ONE_SOFT, (lesson) -> 25)
-                .asConstraint("Teacher should teach on the same weekday in consecutive weeks");
-        }
+                .asConstraint("Subject should be on the same weekday in consecutive weeks");
+        } 
+
+        Constraint classesOnlyInBetweenSubjectDates(ConstraintFactory factory)
+        {
+                return factory.forEach(Lesson.class)
+                        .filter(lesson -> {
+                                        if (lesson.getTimeslot().getDate().isBefore(lesson.getSubject().getStartDate()))
+                                                return true;
+                                        if (lesson.getSubject().getEndDate() != null)
+                                                if (lesson.getTimeslot().getDate().isAfter(lesson.getSubject().getEndDate()))
+                                                        return true;
+                                        return false;
+                                        })
+                                        .penalize(HardSoftScore.ONE_HARD)
+                        .asConstraint("Classes must happen only after UC start and before it ends");
+                }
     // -------------------------
     // SOFT CONSTRAINTS
     // -------------------------

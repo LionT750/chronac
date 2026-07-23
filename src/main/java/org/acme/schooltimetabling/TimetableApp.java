@@ -12,8 +12,12 @@ import org.acme.schooltimetabling.rest.TimetableHttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.WeekFields;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +35,7 @@ public class TimetableApp {
                 .withTerminationSpentLimit(Duration.ofSeconds(1 * 60)));
 
         // Load the problem
-        Timetable problem = new Timetable.Builder(LocalDate.of(2026, 3, 23), LocalDate.of(2026, 8, 8))
+        Timetable problem = new Timetable.Builder(LocalDate.of(2026, 7, 23), LocalDate.of(2027, 3, 8))
                 .withName("MultiTurma Demo")             
                 .withRooms(List.of(
                         new Room(Long.toString(1L), "Sala 114"),
@@ -66,96 +70,100 @@ public class TimetableApp {
     }
 
 
-    private static void printTimetable(Timetable timetable) {
+                private static void printTimetable(Timetable timetable) {
 
-    LOGGER.info("========== TIMETABLE ==========");
+                LOGGER.info("========== TIMETABLE ==========");
 
-    List<Lesson> lessons = timetable.getLessons();
-    List<Timeslot> allTimeslots = timetable.getTimeslots();
+                List<Lesson> lessons = timetable.getLessons();
+                List<Timeslot> allTimeslots = timetable.getTimeslots();
 
-    // Map each timeslot to the teacher(s) assigned to it.
-    Map<Timeslot, String> teachersPerTimeslot = lessons.stream()
-            .filter(l -> l.getTimeslot() != null)
-            .collect(Collectors.groupingBy(
-                    Lesson::getTimeslot,
-                    Collectors.mapping(
-                            Lesson::getTeacher,
-                            Collectors.collectingAndThen(
-                                    Collectors.toCollection(java.util.TreeSet::new),
-                                    teachers -> String.join(", ", teachers)
-                            )
-                    )
-            ));
+                // Map each timeslot to all lessons assigned to it.
+                Map<Timeslot, String> lessonsPerTimeslot = lessons.stream()
+                        .filter(l -> l.getTimeslot() != null)
+                        .collect(Collectors.groupingBy(
+                                Lesson::getTimeslot,
+                                Collectors.collectingAndThen(
+                                        Collectors.toList(),
+                                        list -> list.stream()
+                                                .sorted(Comparator.comparing(Lesson::getTeacher))
+                                                .map(l -> l.getTeacher() + " (" + l.getSubject().getName() + ")")
+                                                .collect(Collectors.joining(" | "))
+                                )
+                        ));
 
-    java.time.temporal.WeekFields weekFields = java.time.temporal.WeekFields.ISO;
+                WeekFields weekFields = WeekFields.ISO;
 
-    // Group all timeslots by ISO week number.
-    Map<Integer, List<Timeslot>> weeks = allTimeslots.stream()
-            .collect(Collectors.groupingBy(
-                    t -> t.getDate().get(weekFields.weekOfWeekBasedYear())
-            ));
+                // Group by ISO week-based year + week number.
+                Map<String, List<Timeslot>> weeks = allTimeslots.stream()
+                        .collect(Collectors.groupingBy(
+                                t -> String.format(
+                                        "%d-W%02d",
+                                        t.getDate().get(weekFields.weekBasedYear()),
+                                        t.getDate().get(weekFields.weekOfWeekBasedYear())
+                                )
+                        ));
 
-    weeks.entrySet().stream()
-            .sorted(Map.Entry.comparingByKey())
-            .forEach(entry -> {
+                weeks.entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(entry -> {
 
-                Integer week = entry.getKey();
-                List<Timeslot> weekSlots = entry.getValue();
+                                String week = entry.getKey();
+                                List<Timeslot> weekSlots = entry.getValue();
 
-                LOGGER.info("");
-                LOGGER.info("=========== WEEK {} ===========", week);
+                                LOGGER.info("");
+                                LOGGER.info("=========== {} ===========", week);
 
-                // Map: startTime -> (dayOfWeek -> timeslot)
-                Map<java.time.LocalTime, Map<java.time.DayOfWeek, Timeslot>> grid =
-                        weekSlots.stream()
-                                .collect(Collectors.groupingBy(
-                                        Timeslot::getStartTime,
-                                        Collectors.toMap(
-                                                Timeslot::getDayOfWeek,
-                                                t -> t
-                                        )
+                                // Map: startTime -> (dayOfWeek -> timeslot)
+                                Map<LocalTime, Map<DayOfWeek, Timeslot>> grid =
+                                        weekSlots.stream()
+                                                .collect(Collectors.groupingBy(
+                                                        Timeslot::getStartTime,
+                                                        Collectors.toMap(
+                                                                Timeslot::getDayOfWeek,
+                                                                t -> t
+                                                        )
+                                                ));
+
+                                List<LocalTime> startTimes = grid.keySet().stream()
+                                        .sorted()
+                                        .toList();
+
+                                LOGGER.info(String.format(
+                                        "%-8s %-45s %-45s %-45s %-45s %-45s",
+                                        "Time",
+                                        "MONDAY",
+                                        "TUESDAY",
+                                        "WEDNESDAY",
+                                        "THURSDAY",
+                                        "FRIDAY"
                                 ));
 
-                List<java.time.LocalTime> startTimes = grid.keySet().stream()
-                        .sorted()
-                        .toList();
+                                for (LocalTime startTime : startTimes) {
 
-                LOGGER.info(String.format(
-                        "%-8s %-15s %-15s %-15s %-15s %-15s",
-                        "Time",
-                        "MONDAY",
-                        "TUESDAY",
-                        "WEDNESDAY",
-                        "THURSDAY",
-                        "FRIDAY"
-                ));
+                                StringBuilder row = new StringBuilder();
+                                row.append(String.format("%-8s", startTime));
 
-                for (java.time.LocalTime startTime : startTimes) {
+                                for (DayOfWeek day : List.of(
+                                        DayOfWeek.MONDAY,
+                                        DayOfWeek.TUESDAY,
+                                        DayOfWeek.WEDNESDAY,
+                                        DayOfWeek.THURSDAY,
+                                        DayOfWeek.FRIDAY)) {
 
-                    StringBuilder row = new StringBuilder();
-                    row.append(String.format("%-8s", startTime));
+                                        Timeslot slot = grid.get(startTime).get(day);
 
-                    for (java.time.DayOfWeek day : List.of(
-                            java.time.DayOfWeek.MONDAY,
-                            java.time.DayOfWeek.TUESDAY,
-                            java.time.DayOfWeek.WEDNESDAY,
-                            java.time.DayOfWeek.THURSDAY,
-                            java.time.DayOfWeek.FRIDAY)) {
+                                        String cell = "-";
+                                        if (slot != null) {
+                                        cell = lessonsPerTimeslot.getOrDefault(slot, "-");
+                                        }
 
-                        Timeslot slot = grid.get(startTime).get(day);
+                                        row.append(String.format(" %-45s", cell));
+                                }
 
-                        String teachers = "-";
-                        if (slot != null) {
-                            teachers = teachersPerTimeslot.getOrDefault(slot, "-");
-                        }
+                                LOGGER.info(row.toString());
+                                }
+                        });
 
-                        row.append(String.format(" %-15s", teachers));
-                    }
-
-                    LOGGER.info(row.toString());
+                LOGGER.info("======================================");
                 }
-            });
-
-        LOGGER.info("======================================");
-        }
 }
