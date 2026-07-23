@@ -3,11 +3,11 @@ package org.acme.schooltimetabling.domain;
 import java.util.Map;
 import java.util.List;
 
-public class UCs {
+public class Curriculum {
 
     public Map<String, Subject> subjects;
     
-    UCs() {
+    Curriculum() {
         this.subjects = Map.of(
             "OOP", new Subject("OOP", 96, "Alisson",  List.of("Sala 114")),
             "Algoritmos", new Subject("Algoritmos", 108, "Rodolfo", List.of("Sala 114")),

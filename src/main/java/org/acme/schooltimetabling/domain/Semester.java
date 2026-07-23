@@ -11,7 +11,7 @@ public class Semester {
     private List<LocalDate> holidays = new ArrayList<>();
     private List<LocalDate> validClassDays;
 
-    private UCs curriculum = new UCs();
+    private Curriculum curriculum = new Curriculum();
 
     public Semester(LocalDate startDate, LocalDate endDate, List<LocalDate> holidays) {
         this.startDate = startDate;
@@ -65,7 +65,7 @@ public class Semester {
         return curriculum.subjects.getOrDefault(subject, new Subject(subject, 0, "", null)).getTotalHours();
     }
 
-    public UCs getCurriculum() {
+    public Curriculum getCurriculum() {
         return curriculum;
     }
 
