@@ -10,7 +10,6 @@ public class TeacherSchedule {
     private String teacherName;
     private List<DayOfWeek> invalidDayOfWeeks;
     private List<LocalDate> specificUnavailableDates;
-    private List<DateRange> unavailableDateRanges;
 
     public TeacherSchedule() {
     }
@@ -19,7 +18,6 @@ public class TeacherSchedule {
         this.teacherName = teacherName;
         this.invalidDayOfWeeks = new ArrayList<>();
         this.specificUnavailableDates = new ArrayList<>();
-        this.unavailableDateRanges = new ArrayList<>();
     }
 
     public String getTeacherName() {
@@ -64,19 +62,12 @@ public class TeacherSchedule {
         }
     }
 
-    public List<DateRange> getUnavailableDateRanges() {
-        return unavailableDateRanges == null ? List.of() : unavailableDateRanges;
-    }
-
-    public void setUnavailableDateRanges(List<DateRange> unavailableDateRanges) {
-        this.unavailableDateRanges = unavailableDateRanges == null ? new ArrayList<>() : new ArrayList<>(unavailableDateRanges);
-    }
-
-    public void addUnavailableDateRange(DateRange range) {
-        if (unavailableDateRanges == null) {
-            unavailableDateRanges = new ArrayList<>();
+    public void addUnavailableDateRange(LocalDate start, LocalDate end) {
+        LocalDate current = start;
+        while (!current.isAfter(end)) {
+            addSpecificUnavailableDate(current);
+            current = current.plusDays(1);
         }
-        unavailableDateRanges.add(range);
     }
 
     public boolean isDayOfWeekAvailable(DayOfWeek day) {
@@ -84,14 +75,6 @@ public class TeacherSchedule {
     }
 
     public boolean isDateAvailable(LocalDate date) {
-        if (getSpecificUnavailableDates().contains(date)) {
-            return false;
-        }
-        for (DateRange range : getUnavailableDateRanges()) {
-            if (range.contains(date)) {
-                return false;
-            }
-        }
-        return true;
+        return !getSpecificUnavailableDates().contains(date);
     }
 }

@@ -103,18 +103,7 @@ public class Curriculum {
         if (schedule == null) {
             return List.of();
         }
-
-        java.util.List<LocalDate> result = new java.util.ArrayList<>(schedule.getSpecificUnavailableDates());
-        for (DateRange range : schedule.getUnavailableDateRanges()) {
-            LocalDate current = range.getStart();
-            while (!current.isAfter(range.getEnd())) {
-                if (!result.contains(current)) {
-                    result.add(current);
-                }
-                current = current.plusDays(1);
-            }
-        }
-        return result;
+        return schedule.getSpecificUnavailableDates();
     }
 
     public void clearAllTeacherSchedules() {

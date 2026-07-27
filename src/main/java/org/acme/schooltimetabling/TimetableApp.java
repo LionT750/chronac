@@ -3,7 +3,6 @@ package org.acme.schooltimetabling;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import org.acme.schooltimetabling.domain.DateRange;
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.TeacherSchedule;
@@ -46,7 +45,7 @@ public class TimetableApp {
         rodolfoSchedule.addInvalidDayOfWeek(DayOfWeek.WEDNESDAY);
 
         TeacherSchedule vanessaSchedule = new TeacherSchedule("Vanessa");
-        vanessaSchedule.addUnavailableDateRange(new DateRange(LocalDate.of(2026, 9,21), LocalDate.of(2026,9,30)));
+        vanessaSchedule.addUnavailableDateRange(LocalDate.of(2026, 9,21), LocalDate.of(2026,9,30));
         vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 2));
         vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 9));
         vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 16));
