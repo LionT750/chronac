@@ -8,9 +8,11 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 
 import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.TeacherSchedule;
 import org.acme.schooltimetabling.domain.Week;
 import org.acme.schooltimetabling.solver.justifications.RoomConflictJustification;
 import org.acme.schooltimetabling.solver.justifications.TeacherConflictJustification;
+import org.acme.schooltimetabling.solver.justifications.TeacherDateUnavailableJustification;
 import org.jspecify.annotations.NonNull;
 
 import java.time.DayOfWeek;
@@ -33,6 +35,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 consecutiveWeeksSameWeekday(factory),
                 roomPerSubject(factory),
                 classesOnlyInBetweenSubjectDates(factory),
+                teacherDateUnavailability(factory),
 
                 fullWeekCoverage(factory),
                 daysWithoutClass(factory),
@@ -106,7 +109,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 
         Constraint daysWithoutClass(ConstraintFactory factory){
                 return factory.forEach(Lesson.class)
-                .filter(lesson -> !lesson.getSubject().getDesignDayOfWeeks().contains(lesson.getTimeslot().getDayOfWeek()))
+                .filter(lesson -> !lesson.getSubject().getEffectiveDayOfWeeks().contains(lesson.getTimeslot().getDayOfWeek()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Only days which should have class are allowed");
         }
@@ -117,7 +120,10 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
                 .groupBy((week, lesson) -> week,
                         ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTimeslot().getDayOfWeek()))
-                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> ((52 - week.getWeekOfYear()) / 2) * Math.abs(VALID_DAYS.size() - dayCount))
+                .penalize(HardSoftScore.ONE_SOFT, (week, dayCount) -> {
+                    long cappedWeek = Math.min(week.getWeekOfYear(), 52L);
+                    return (int) (Math.max(1L, (52L - cappedWeek) / 2L) * Math.abs(VALID_DAYS.size() - dayCount));
+                })
                 .asConstraint("Full week coverage");
         }
 
@@ -127,12 +133,8 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         Lesson.class,
                         Joiners.equal(Lesson::getSubject),
                         Joiners.equal(
-                                lesson -> lesson.getTimeslot().getWeekOfYear() + 1,
-                                lesson -> lesson.getTimeslot().getWeekOfYear()
-                        ),
-                        Joiners.equal(
-                                lesson -> lesson.getTimeslot().getDayOfWeek(),
-                                lesson -> lesson.getTimeslot().getDayOfWeek()
+                                lesson -> lesson.getTimeslot().getDate().plusDays(7),
+                                lesson -> lesson.getTimeslot().getDate()
                         )
                 )
                 .penalize(HardSoftScore.ONE_SOFT, (lesson) -> 25)
@@ -153,6 +155,16 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Classes must happen only after UC start and before it ends");
                 }
+        Constraint teacherDateUnavailability(ConstraintFactory factory) {
+                return factory.forEach(Lesson.class)
+                        .join(factory.forEach(TeacherSchedule.class),
+                                Joiners.equal(Lesson::getTeacher, TeacherSchedule::getTeacherName))
+                        .filter((lesson, schedule) -> !schedule.isDateAvailable(lesson.getTimeslot().getDate()))
+                        .penalize(HardSoftScore.ONE_HARD)
+                        .justifyWith((lesson, schedule, score) -> new TeacherDateUnavailableJustification(lesson.getTeacher(), lesson.getTimeslot().getDate(), lesson))
+                        .asConstraint("Teacher unavailable on date");
+        }
+
     // -------------------------
     // SOFT CONSTRAINTS
     // -------------------------

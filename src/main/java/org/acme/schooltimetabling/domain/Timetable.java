@@ -34,6 +34,9 @@ public class Timetable {
     @ProblemFactCollectionProperty
     private List<Week> weeks;
 
+    @ProblemFactCollectionProperty
+    private List<TeacherSchedule> teacherSchedules;
+
     @PlanningEntityCollectionProperty
     private List<Lesson> lessons;
 
@@ -42,6 +45,11 @@ public class Timetable {
 
     // Required by Timefold
     public Timetable() {
+        this.timeslots = List.of();
+        this.rooms = List.of();
+        this.weeks = List.of();
+        this.teacherSchedules = List.of();
+        this.lessons = List.of();
     }
 
     private Timetable(Builder builder) {
@@ -50,6 +58,7 @@ public class Timetable {
         this.rooms = List.copyOf(builder.rooms);
         this.lessons = List.copyOf(builder.lessons);
         this.weeks = List.copyOf(builder.weeks);
+        this.teacherSchedules = List.copyOf(builder.teacherSchedules);
         this.score = null;
     }
 
@@ -62,6 +71,7 @@ public class Timetable {
         private List<Room> rooms;
         private List<Lesson> lessons;
         private List<Week> weeks;
+        private List<TeacherSchedule> teacherSchedules = List.of();
 
         public Builder(LocalDate semesterStartDate, LocalDate semesterEndDate) {
             this.semester = new Semester(
@@ -78,6 +88,11 @@ public class Timetable {
 
         public Builder withRooms(List<Room> rooms) {
             this.rooms = new ArrayList<>(rooms);
+            return this;
+        }
+
+        public Builder withTeacherSchedules(List<TeacherSchedule> teacherSchedules) {
+            this.teacherSchedules = new ArrayList<>(teacherSchedules);
             return this;
         }
 
@@ -135,6 +150,12 @@ public class Timetable {
             Objects.requireNonNull(name, "Name must be provided.");
             Objects.requireNonNull(rooms, "Rooms must be provided.");
 
+            // Register teacher schedules with curriculum
+            for (TeacherSchedule schedule : teacherSchedules) {
+                semester.getCurriculum().registerTeacherSchedule(schedule);
+            }
+            semester.getCurriculum().applyTeacherSchedules();
+
             // Generate derived data automatically.
             createTimeslots();
             createWeeks();
@@ -166,6 +187,10 @@ public class Timetable {
 
     public List<Week> getWeeks() {
         return weeks;
+    }
+
+    public List<TeacherSchedule> getTeacherSchedules() {
+        return teacherSchedules;
     }
 
     public HardSoftScore getScore() {
