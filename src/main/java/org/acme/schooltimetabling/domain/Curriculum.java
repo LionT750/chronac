@@ -1,6 +1,7 @@
 package org.acme.schooltimetabling.domain;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 public class Curriculum {
 
     public Map<String, Subject> subjects;
+    private Map<String, TeacherSchedule> teacherSchedules = new HashMap<>();
     
     Curriculum() {
         this.subjects = Map.ofEntries(
@@ -46,5 +48,65 @@ public class Curriculum {
                         List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
                                 DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)))
             );
+    }
+
+    public void registerTeacherSchedule(TeacherSchedule schedule) {
+        teacherSchedules.put(schedule.getTeacherName(), schedule);
+    }
+
+    public TeacherSchedule getTeacherSchedule(String teacherName) {
+        return teacherSchedules.get(teacherName);
+    }
+
+    public Map<String, TeacherSchedule> getTeacherSchedules() {
+        return teacherSchedules;
+    }
+
+    public List<DayOfWeek> getValidDayOfWeeksForSubject(String subjectName) {
+        Subject subject = subjects.get(subjectName);
+        if (subject == null) {
+            return List.of();
+        }
+
+        TeacherSchedule schedule = teacherSchedules.get(subject.getTeacher());
+        if (schedule == null) {
+            return subject.getDesignDayOfWeeks();
+        }
+
+        return subject.getDesignDayOfWeeks().stream()
+                .filter(schedule::isDayOfWeekAvailable)
+                .toList();
+    }
+
+    public void applyTeacherSchedules() {
+        for (Subject subject : subjects.values()) {
+            TeacherSchedule schedule = teacherSchedules.get(subject.getTeacher());
+            if (schedule != null && !schedule.getInvalidDayOfWeeks().isEmpty()) {
+                List<DayOfWeek> filtered = subject.getDesignDayOfWeeks().stream()
+                        .filter(schedule::isDayOfWeekAvailable)
+                        .toList();
+                subject.setEffectiveDayOfWeeks(filtered);
+            }
+        }
+    }
+
+    public boolean isTeacherAvailableOnDate(String teacherName, LocalDate date) {
+        TeacherSchedule schedule = teacherSchedules.get(teacherName);
+        if (schedule == null) {
+            return true;
+        }
+        return schedule.isDateAvailable(date);
+    }
+
+    public List<LocalDate> getTeacherUnavailableDates(String teacherName) {
+        TeacherSchedule schedule = teacherSchedules.get(teacherName);
+        if (schedule == null) {
+            return List.of();
+        }
+        return schedule.getSpecificUnavailableDates();
+    }
+
+    public void clearAllTeacherSchedules() {
+        teacherSchedules.clear();
     }
 }

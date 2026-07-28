@@ -15,6 +15,7 @@ public class Subject {
     private @Nullable LocalDate endDate;
     private List<String> designedRooms;
     private List<DayOfWeek> designDayOfWeeks;
+    private List<DayOfWeek> effectiveDayOfWeeks;
 
     public Subject(String name, int totalHours, String teacher, LocalDate starDate, LocalDate endDate, List<String> rooms, List<DayOfWeek> days) {
         this.name = name;
@@ -24,6 +25,7 @@ public class Subject {
         this.endDate = endDate;
         this.designedRooms = rooms == null ? new ArrayList<>() : new ArrayList<>(rooms);
         this.designDayOfWeeks = days == null ? new ArrayList<>() : new ArrayList<>(days);
+        this.effectiveDayOfWeeks = days == null ? new ArrayList<>() : new ArrayList<>(days);
     }
 
     public String getName() {
@@ -68,5 +70,13 @@ public class Subject {
 
     public void setDesignDayOfWeeks(List<DayOfWeek> designDayOfWeeks) {
         this.designDayOfWeeks = designDayOfWeeks;
+    }
+
+    public List<DayOfWeek> getEffectiveDayOfWeeks() {
+        return effectiveDayOfWeeks;
+    }
+
+    public void setEffectiveDayOfWeeks(List<DayOfWeek> effectiveDayOfWeeks) {
+        this.effectiveDayOfWeeks = effectiveDayOfWeeks == null ? new ArrayList<>() : new ArrayList<>(effectiveDayOfWeeks);
     }
 }

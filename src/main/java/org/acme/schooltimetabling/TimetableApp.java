@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
+import org.acme.schooltimetabling.domain.TeacherSchedule;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.solver.TimetableConstraintProvider;
@@ -32,14 +33,33 @@ public class TimetableApp {
                 .withSolutionClass(Timetable.class)
                 .withEntityClasses(Lesson.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
-                .withTerminationSpentLimit(Duration.ofSeconds(1 * 60)));
+                .withTerminationSpentLimit(Duration.ofSeconds(2 * 60)));
 
         // Load the problem
+        TeacherSchedule NelmaSchedule = new TeacherSchedule("Nelma");
+        NelmaSchedule.addInvalidDayOfWeek(DayOfWeek.WEDNESDAY);
+        NelmaSchedule.addInvalidDayOfWeek(DayOfWeek.THURSDAY);
+       
+
+        TeacherSchedule rodolfoSchedule = new TeacherSchedule("Rodolfo");
+        rodolfoSchedule.addInvalidDayOfWeek(DayOfWeek.WEDNESDAY);
+
+        TeacherSchedule vanessaSchedule = new TeacherSchedule("Vanessa");
+        vanessaSchedule.addUnavailableDateRange(LocalDate.of(2026, 9,21), LocalDate.of(2026,9,30));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 2));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 9));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 16));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 6));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 13));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 20));
+        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 27));
+
         Timetable problem = new Timetable.Builder(LocalDate.of(2026, 7, 23), LocalDate.of(2027, 3, 8))
                 .withName("MultiTurma Demo")             
                 .withRooms(List.of(
                         new Room(Long.toString(1L), "Sala 114"),
                         new Room(Long.toString(2L), "Sala 115")))
+                .withTeacherSchedules(List.of(NelmaSchedule, rodolfoSchedule, vanessaSchedule))
                 .build();
 
         // Solve the problem

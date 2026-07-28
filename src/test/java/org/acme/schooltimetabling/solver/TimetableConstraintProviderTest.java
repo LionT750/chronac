@@ -135,7 +135,7 @@ class TimetableConstraintProviderTest {
         lesson2.setRoom(ROOM2);
         constraintVerifier.verifyThat(TimetableConstraintProvider::dayOfWeekSubjectConsistency)
                 .given(lesson1, lesson2)
-                .penalizesBy(5);
+                .penalizesBy(8);
     }
 
     @Test
