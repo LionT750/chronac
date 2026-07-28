@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import Login from './Login'
  
 function formatLesson(lesson) {
   const t = lesson.timeslot
@@ -20,6 +21,7 @@ function App() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const isAuthenticated = false
  
   const [teacherFilter, setTeacherFilter] = useState('')
   const [subjectFilter, setSubjectFilter] = useState('')
@@ -77,7 +79,11 @@ function App() {
     setSubjectFilter('')
     setDayFilter('')
   }
- 
+
+  if (!isAuthenticated) {
+      return <Login />
+    }
+
   return (
     <div id="debug-root">
       <header>
