@@ -1,0 +1,65 @@
+/* Centraliza a tela de login */
+.login {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+}
+
+/* Caixa principal do login */
+.login-container {
+  width: 350px;
+  padding: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Título */
+.login-container h1 {
+  text-align: center;
+  color: #1f5f99;
+}
+
+/* Texto abaixo do título */
+.login-container p {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+/* Organiza os elementos do formulário */
+.login-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilo dos textos */
+.login-container label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+/* Campos de entrada */
+.login-container input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Botão Entrar */
+.login-container button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #1f5f99;
+  color: white;
+  cursor: pointer;
+}
+
+/* Efeito ao passar o mouse */
+.login-container button:hover {
+  background-color: #184b79;
+}
