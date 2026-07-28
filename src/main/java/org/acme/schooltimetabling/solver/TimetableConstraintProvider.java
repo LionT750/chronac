@@ -16,6 +16,7 @@ import org.acme.schooltimetabling.solver.justifications.TeacherDateUnavailableJu
 import org.jspecify.annotations.NonNull;
 
 import java.time.DayOfWeek;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class TimetableConstraintProvider implements ConstraintProvider {
@@ -39,6 +40,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 
                 fullWeekCoverage(factory),
                 daysWithoutClass(factory),
+                compactSchedule(factory),
 
                 // SOFT
         };
@@ -103,7 +105,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                                 Joiners.equal(Week::getWeekOfYear, lesson -> lesson.getTimeslot().getWeekOfYear()))
                         .groupBy((week, lesson) -> week,
                                 ConstraintCollectors.countDistinct((week, lesson) -> lesson.getTeacher()))
-                        .reward(HardSoftScore.ONE_SOFT, (week, teacherCount) -> teacherCount)
+                        .reward(HardSoftScore.ONE_SOFT, (week, teacherCount) -> teacherCount * 10)
                         .asConstraint("Weekly teacher variety");
                 }
 
@@ -163,6 +165,18 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         .penalize(HardSoftScore.ONE_HARD)
                         .justifyWith((lesson, schedule, score) -> new TeacherDateUnavailableJustification(lesson.getTeacher(), lesson.getTimeslot().getDate(), lesson))
                         .asConstraint("Teacher unavailable on date");
+        }
+
+        Constraint compactSchedule(ConstraintFactory factory) {
+                return factory.forEach(Lesson.class)
+                        .groupBy(
+                                ConstraintCollectors.min((Lesson lesson) -> lesson.getTimeslot().getDate()),
+                                ConstraintCollectors.max((Lesson lesson) -> lesson.getTimeslot().getDate())
+                        )
+                        .filter((minDate, maxDate) -> minDate != null && maxDate != null)
+                        .penalize(HardSoftScore.ONE_SOFT,
+                                (minDate, maxDate) -> (int) ChronoUnit.DAYS.between(minDate, maxDate))
+                        .asConstraint("Compact schedule");
         }
 
     // -------------------------
