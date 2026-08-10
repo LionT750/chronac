@@ -1,3 +1,19 @@
 // binaries
 /target/
-
+/node/*
+node_modules/
+CHANGELOG
+corepack
+corepack.cmd
+install_tools.bat
+LICENSE
+node.exe
+node
+nodevars.bat
+npm
+npm.cmd
+npm.ps1
+npx
+npx.cmd
+npx.ps1
+README
