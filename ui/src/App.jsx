@@ -19,9 +19,10 @@ function formatLesson(lesson) {
  
 function App() {
   const [data, setData] = useState(null)
+  const [hey, setHey] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const isAuthenticated = false
+  const isAuthenticated = true
  
   const [teacherFilter, setTeacherFilter] = useState('')
   const [subjectFilter, setSubjectFilter] = useState('')
@@ -39,9 +40,21 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
+
+  const fetchHeyMaster = () => {
+    fetch('api/sayHeyMaster')
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.json()
+    })
+    .then(setHey)
+    .catch((err) => setError(err.message))
+    .finally(() => {})
+  }
  
   // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: kick off the initial fetch on mount
   useEffect(fetchTimetable, [])
+  useEffect(fetchHeyMaster, [])
  
   const allLessons = (data?.lessons ?? [])
     .slice()
@@ -99,13 +112,17 @@ function App() {
         <>
           <section className="summary">
             <span><strong>Name:</strong> {data.name}</span>
-            <span><strong>Score:</strong> {data.score?.hardScore}hard / {data.score?.softScore}soft</span>
+            <span><strong>{hey}</strong></span>
             <span><strong>Feasible:</strong> {String(data.score?.feasible)}</span>
             <span><strong>Lessons:</strong> {lessons.length} / {allLessons.length}</span>
           </section>
  
           <section className="filters">
-            <select value={teacherFilter} onChange={(e) => setTeacherFilter(e.target.value)}>
+            <select value={teacherFilter} onChange={(e) => {
+              setTeacherFilter(e.target.value)
+              setHey(`Changed teacher to ${e.target.value}`)
+              }
+              }>
               <option value="">Todos os professores</option>
               {teacherOptions.map((t) => (
                 <option key={t} value={t}>{t}</option>

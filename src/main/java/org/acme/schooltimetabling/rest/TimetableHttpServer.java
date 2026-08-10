@@ -33,6 +33,7 @@ public class TimetableHttpServer {
     public void start(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api/timetable", this::handleGetTimetable);
+        server.createContext("/api/sayHeyMaster", this::handleHeyMaster);
         server.start();
         LOGGER.info("REST API listening on http://localhost:{}/api/timetable", port);
     }
@@ -47,6 +48,21 @@ public class TimetableHttpServer {
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(200, responseBytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
+            os.write(responseBytes);
+        }
+    }
+
+    private void handleHeyMaster(HttpExchange exchange) throws IOException {
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+            return;
+        }
+
+        byte [] responseBytes = objectMapper.writeValueAsBytes("Hey from master Lucas");
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(200, responseBytes.length);
+        try (OutputStream os = exchange.getResponseBody()){
             os.write(responseBytes);
         }
     }

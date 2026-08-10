@@ -42,7 +42,6 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 daysWithoutClass(factory),
                 compactSchedule(factory),
 
-                // SOFT
         };
     }
 
