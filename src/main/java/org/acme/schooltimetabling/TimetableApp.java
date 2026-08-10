@@ -33,7 +33,7 @@ public class TimetableApp {
                 .withSolutionClass(Timetable.class)
                 .withEntityClasses(Lesson.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
-                .withTerminationSpentLimit(Duration.ofSeconds(2 * 60)));
+                .withTerminationSpentLimit(Duration.ofSeconds(1 * 60)));
 
         // Load the problem
         TeacherSchedule NelmaSchedule = new TeacherSchedule("Nelma");
