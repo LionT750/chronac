@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import Login from './Login'
+import Sidebar from './components/sidebar'
  
 function formatLesson(lesson) {
   const t = lesson.timeslot
@@ -21,7 +22,7 @@ function App() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const isAuthenticated = false
+  const isAuthenticated = true
  
   const [teacherFilter, setTeacherFilter] = useState('')
   const [subjectFilter, setSubjectFilter] = useState('')
@@ -86,17 +87,17 @@ function App() {
 
   return (
     <div id="debug-root">
+      <Sidebar />
+      <div className='Calendar'>
       <header>
         <h1>Chronac </h1>
-        <button type="button" onClick={fetchTimetable} disabled={loading}>
-          {loading ? 'Carregando...' : 'Atualizar'}
-        </button>
       </header>
  
       {error && <p className="error">Erro ao buscar /api/timetable: {error}</p>}
  
       {data && (
         <>
+    
           <section className="summary">
             <span><strong>Name:</strong> {data.name}</span>
             <span><strong>Score:</strong> {data.score?.hardScore}hard / {data.score?.softScore}soft</span>
@@ -125,8 +126,13 @@ function App() {
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
- 
+
+            <section className="btn">
+            <button className="update-btn" type="button" onClick={fetchTimetable} disabled={loading}>
+          {loading ? 'Carregando...' : 'Atualizar'}
+        </button>
             <button className="clear-btn"  onClick={clearFilters}>Limpar filtro</button>
+            </section>
           </section>
  
           <table>
@@ -153,13 +159,9 @@ function App() {
               ))}
             </tbody>
           </table>
- 
-          <details>
-            <summary>JSON bruto</summary>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
-          </details>
         </>
       )}
+      </div>
     </div>
   )
 }
