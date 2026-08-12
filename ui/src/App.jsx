@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import Login from './Login'
-import Sidebar from './components/sidebar'
  
 function formatLesson(lesson) {
   const t = lesson.timeslot
@@ -87,7 +86,6 @@ function App() {
 
   return (
     <div id="debug-root">
-      <Sidebar />
       <div className='Calendar'>
       <header>
         <h1>Chronac </h1>
