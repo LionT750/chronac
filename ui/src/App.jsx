@@ -16,6 +16,16 @@ function formatLesson(lesson) {
     room: lesson.room?.name ?? '-',
   }
 }
+
+// Timefold serializes the score as a string such as "0hard/-3soft".
+// A timetable is feasible when its hard component is zero.
+function isFeasible(score) {
+  if (typeof score === 'string') {
+    const hard = score.match(/^(-?\d+)hard/)
+    return hard != null && hard[1] === '0'
+  }
+  return score != null && score.feasible === true
+}
  
 function App() {
   const [data, setData] = useState(null)
@@ -113,7 +123,7 @@ function App() {
           <section className="summary">
             <span><strong>Name:</strong> {data.name}</span>
             <span><strong>{hey}</strong></span>
-            <span><strong>Feasible:</strong> {String(data.score?.feasible)}</span>
+            <span><strong>Feasible:</strong> {String(isFeasible(data.score))}</span>
             <span><strong>Lessons:</strong> {lessons.length} / {allLessons.length}</span>
           </section>
  
