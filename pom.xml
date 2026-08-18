@@ -65,6 +65,74 @@
           <optimizedLaunch>false</optimizedLaunch>
         </configuration>
       </plugin>
+
+      <!-- Builds the Vite/React UI with the local Node/npm and stages dist/ into the jar -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.15.1</version>
+        <configuration>
+          <workingDirectory>${project.basedir}/ui</workingDirectory>
+          <!-- Cached outside target/ so `mvn clean` never trips over node's npm symlinks -->
+          <installDirectory>${user.home}/.m2/node-tools</installDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>install-node-and-npm</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <nodeVersion>v24.11.1</nodeVersion>
+              <skip>${skip.installnodenpm}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm-install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>install --no-audit --no-fund</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm-build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>run build</arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Copies the built UI into target/classes/static so Spring Boot serves it -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-ui-dist</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/ui/dist</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

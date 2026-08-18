@@ -25,6 +25,8 @@ Tecnologias: Java 21, Spring Boot 3, Timefold Solver 2.2.0, Maven.
    java -jar target/chronac.jar
    ```
 
+O build Maven compila automaticamente a UI (Vite/React) via `frontend-maven-plugin` e a empacota dentro do jar em `target/classes/static`. A UI fica disponivel em `http://localhost:8080` junto com a API (mesma origem, sem CORS).
+
 Ao iniciar, a aplicacao resolve o mesmo problema de demonstracao ("MultiTurma Demo") que a versao anterior resolvia no `main`, rodando por 60 segundos (configuravel em `src/main/resources/application.properties` via `timefold.solver.termination.spent-limit`). A melhor solucao encontrada e mantida em memoria e pode ser consumida pela UI para demonstracao ao vivo.
 
 ## Endpoints REST
@@ -47,13 +49,17 @@ O score e serializado no formato padrao do Timefold como string, ex.: `"0hard/-3
 
 ## Frontend (UI)
 
-A UI React/Vite consome `GET /api/timetable` (proxy `/api` -> `http://localhost:8080`):
+A UI React/Vite e compilada automaticamente durante o `mvn package` e servida pelo proprio Spring Boot em `http://localhost:8080` (sem precisar de servidor separado).
+
+Para desenvolver com hot reload, rode a UI separadamente em `http://localhost:5173` (o `/api` e proxiado pelo Vite para `http://localhost:8080`):
 
 ```sh
 cd ui
 npm install
 npm run dev
 ```
+
+Chamadas cross-origin do dev server sao liberadas via CORS em `application.properties` (`chronac.cors.allowed-origins`, configuravel pela variavel `CHRONAC_CORS_ORIGINS`).
 
 ## Git workflow
 

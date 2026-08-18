@@ -13,7 +13,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.WeekFields;
 import java.util.Comparator;
@@ -49,9 +48,9 @@ public class TimetableDemoSolver {
         }
 
         SolverJob<Timetable> solverJob = solverManager.solveAndListen(DEMO_PROBLEM_ID, problem,
-                bestSolution -> {
+                bestSolutionFound -> {
                     synchronized (lock) {
-                        this.bestSolution = bestSolution;
+                        this.bestSolution = bestSolutionFound;
                     }
                 });
 
@@ -116,9 +115,7 @@ public class TimetableDemoSolver {
                                 list -> list.stream()
                                         .sorted(Comparator.comparing(Lesson::getTeacher))
                                         .map(l -> l.getTeacher() + " (" + l.getSubject().getName() + ")")
-                                        .collect(Collectors.joining(" | "))
-                        )
-                ));
+                                        .collect(Collectors.joining(" | ")))));
 
         WeekFields weekFields = WeekFields.ISO;
 
@@ -128,9 +125,7 @@ public class TimetableDemoSolver {
                         t -> String.format(
                                 "%d-W%02d",
                                 t.getDate().get(weekFields.weekBasedYear()),
-                                t.getDate().get(weekFields.weekOfWeekBasedYear())
-                        )
-                ));
+                                t.getDate().get(weekFields.weekOfWeekBasedYear()))));
 
         weeks.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -142,15 +137,12 @@ public class TimetableDemoSolver {
                     LOGGER.info("=========== {} ===========", week);
 
                     // Map: startTime -> (dayOfWeek -> timeslot)
-                    Map<LocalTime, Map<DayOfWeek, Timeslot>> grid =
-                            weekSlots.stream()
-                                    .collect(Collectors.groupingBy(
-                                            Timeslot::getStartTime,
-                                            Collectors.toMap(
-                                                    Timeslot::getDayOfWeek,
-                                                    t -> t
-                                            )
-                                    ));
+                    Map<LocalTime, Map<DayOfWeek, Timeslot>> grid = weekSlots.stream()
+                            .collect(Collectors.groupingBy(
+                                    Timeslot::getStartTime,
+                                    Collectors.toMap(
+                                            Timeslot::getDayOfWeek,
+                                            t -> t)));
 
                     List<LocalTime> startTimes = grid.keySet().stream()
                             .sorted()
@@ -163,8 +155,7 @@ public class TimetableDemoSolver {
                             "TUESDAY",
                             "WEDNESDAY",
                             "THURSDAY",
-                            "FRIDAY"
-                    ));
+                            "FRIDAY"));
 
                     for (LocalTime startTime : startTimes) {
                         StringBuilder row = new StringBuilder();
