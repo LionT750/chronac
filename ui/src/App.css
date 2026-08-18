@@ -1,14 +1,12 @@
 #debug-root {
     display: flex;
-    flex-direction: column;
-    row-gap: 28px; /* or gap: 24px; */
     width: 100%;
     text-align: left;
     box-sizing: border-box;
     background-color: var(--bg);
 }
 
-button {
+.Calendar button {
   font: inherit;
   padding: 6px 14px;
   border-radius: 6px;
@@ -19,16 +17,16 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.Calendar button:hover {
   transform: scale(1.03);
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-button:active {
+.Calendar button:active {
   transform: scale(0.97);
 }
 
-.btn{
+.Calendar .btn{
   display: flex;
   justify-content: flex-end;
   gap: 5px;
@@ -46,10 +44,19 @@ button:active {
 
 .filters {
   display: flex;
-  gap: 5px;
+  gap: 25px;
+  color: #ffffff;
 }
 
-button:disabled {
+select {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.Calendar button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -108,6 +115,13 @@ pre {
   flex-direction: column;
   gap: 24px;
   min-width: 0;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 
