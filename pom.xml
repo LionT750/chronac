@@ -3,24 +3,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.acme</groupId>
-  <artifactId>hello-world</artifactId>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.16</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>br.com.chronac</groupId>
+  <artifactId>chronac</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <name>chronac</name>
+  <description>Alocacao de horarios escolares - Spring Boot + Timefold Solver</description>
 
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jar.with.dependencies.name>hello-world-run</jar.with.dependencies.name>
 
     <version.ai.timefold.solver>2.2.0</version.ai.timefold.solver>
-    <version.org.assertj>3.27.7</version.org.assertj>
-    <version.org.junit.jupiter>6.1.0</version.org.junit.jupiter>
-    <version.ch.qos.logback>1.5.34</version.ch.qos.logback>
-    <version.com.fasterxml.jackson>2.18.2</version.com.fasterxml.jackson>
-
-    <version.compiler.plugin>3.15.0</version.compiler.plugin>
-    <version.surefire.plugin>3.5.6</version.surefire.plugin>
-    <version.assembly.plugin>3.8.0</version.assembly.plugin>
   </properties>
 
   <dependencyManagement>
@@ -32,108 +32,104 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>${version.org.junit.jupiter}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${version.ch.qos.logback}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
+    <!-- Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${version.com.fasterxml.jackson}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${version.com.fasterxml.jackson}</version>
+      <artifactId>timefold-solver-spring-boot-starter</artifactId>
     </dependency>
 
     <!-- Testing -->
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${version.org.assertj}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <finalName>chronac</finalName>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${version.compiler.plugin}</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${version.surefire.plugin}</version>
-      </plugin>
-      <plugin> <!-- For the purposes of integration testing only. -->
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${version.surefire.plugin}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
-          <useModulePath>false</useModulePath>
-          <systemPropertyVariables>
-            <artifactName>${jar.with.dependencies.name}</artifactName>
-          </systemPropertyVariables>
+          <!-- optimizedLaunch disables the C2 compiler, which has a massive performance impact on the solver -->
+          <optimizedLaunch>false</optimizedLaunch>
+        </configuration>
+      </plugin>
+
+      <!-- Builds the Vite/React UI with the local Node/npm and stages dist/ into the jar -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.15.1</version>
+        <configuration>
+          <workingDirectory>${project.basedir}/ui</workingDirectory>
+          <!-- Cached outside target/ so `mvn clean` never trips over node's npm symlinks -->
+          <installDirectory>${user.home}/.m2/node-tools</installDirectory>
         </configuration>
         <executions>
           <execution>
+            <id>install-node-and-npm</id>
             <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
+              <goal>install-node-and-npm</goal>
             </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <nodeVersion>v24.11.1</nodeVersion>
+              <skip>${skip.installnodenpm}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm-install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>install --no-audit --no-fund</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm-build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>run build</arguments>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+
+      <!-- Copies the built UI into target/classes/static so Spring Boot serves it -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${version.assembly.plugin}</version>
-        <configuration>
-          <finalName>${jar.with.dependencies.name}</finalName>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors> <!-- Builds a JAR with dependencies that correctly merges META-INF/service descriptors. -->
-            <descriptor>src/assembly/jar-with-dependencies-and-services.xml</descriptor>
-          </descriptors>
-          <archive>
-            <manifestEntries>
-              <Main-Class>org.acme.schooltimetabling.TimetableApp</Main-Class>
-              <Multi-Release>true</Multi-Release> <!-- Some of our dependencies are multi-release JARs. -->
-            </manifestEntries>
-          </archive>
-        </configuration>
+        <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
+            <id>copy-ui-dist</id>
+            <phase>process-resources</phase>
             <goals>
-              <goal>single</goal>
+              <goal>copy-resources</goal>
             </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/ui/dist</directory>
+                </resource>
+              </resources>
+            </configuration>
           </execution>
         </executions>
       </plugin>
