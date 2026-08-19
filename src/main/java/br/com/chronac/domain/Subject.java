@@ -16,6 +16,7 @@ public class Subject {
     private List<String> designedRooms;
     private List<DayOfWeek> designDayOfWeeks;
     private List<DayOfWeek> effectiveDayOfWeeks;
+    private int weeklyCadenceCap = 0;
 
     public Subject(String name, int totalHours, String teacher, LocalDate starDate, LocalDate endDate, List<String> rooms, List<DayOfWeek> days) {
         this.name = name;
@@ -74,6 +75,14 @@ public class Subject {
 
     public List<DayOfWeek> getEffectiveDayOfWeeks() {
         return effectiveDayOfWeeks;
+    }
+
+    public int getWeeklyCadenceCap() {
+        return weeklyCadenceCap;
+    }
+
+    public void setWeeklyCadenceCap(int weeklyCadenceCap) {
+        this.weeklyCadenceCap = weeklyCadenceCap;
     }
 
     public void setEffectiveDayOfWeeks(List<DayOfWeek> effectiveDayOfWeeks) {

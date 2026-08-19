@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.HardSoftScore;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -146,6 +147,34 @@ public class Timetable {
                     .toList();
         }
 
+        private void computeCadenceCaps() {
+            for (Subject subject : semester.getCurriculum().subjects.values()) {
+                if (subject.getStartDate() == null) {
+                    continue;
+                }
+                LocalDate windowStart = subject.getStartDate().isBefore(semester.getStartDate())
+                        ? semester.getStartDate()
+                        : subject.getStartDate();
+                LocalDate windowEnd = subject.getEndDate() != null ? subject.getEndDate() : semester.getEndDate();
+                if (windowEnd.isBefore(windowStart)) {
+                    continue;
+                }
+
+                long windowWeeks = windowStart.datesUntil(windowEnd.plusDays(1))
+                        .map(date -> (long) date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR))
+                        .distinct()
+                        .count();
+
+                int lessons = subject.getTotalHours() / HOURS_PER_LESSON;
+                int cap = (int) Math.ceil(lessons / (double) Math.max(1L, windowWeeks));
+                int availableDays = subject.getEffectiveDayOfWeeks().size();
+                if (availableDays > 0) {
+                    cap = Math.min(cap, availableDays);
+                }
+                subject.setWeeklyCadenceCap(Math.max(1, cap));
+            }
+        }
+
         public Timetable build() {
             Objects.requireNonNull(name, "Name must be provided.");
             Objects.requireNonNull(rooms, "Rooms must be provided.");
@@ -160,6 +189,7 @@ public class Timetable {
             createTimeslots();
             createWeeks();
             createLessons();
+            computeCadenceCaps();
 
             return new Timetable(this);
         }
