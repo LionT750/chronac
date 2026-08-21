@@ -25,7 +25,8 @@ import {
   isSameMonth, 
   isSameDay, 
   addMonths, 
-  subMonths 
+  subMonths,
+  addDays,
 } from 'date-fns'
 
 
@@ -33,6 +34,27 @@ import { ptBR } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+
+
+
+const AZUL = { border: 'border-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-300' }
+const VERDE = { border: 'border-emerald-500', bg: 'bg-emerald-500/10', text: 'text-emerald-300' }
+const CINZA = { border: 'border-slate-500', bg: 'bg-slate-500/10', text: 'text-slate-300' } // fallback se não achar número
+
+function corPorMateria(nome) {
+  if (!nome) return CINZA
+  const match = nome.match(/UC\s*(\d+)/i)
+  if (!match) return CINZA
+
+  const numero = parseInt(match[1], 10)
+  return numero <= 6 ? AZUL : VERDE
+}
+
+function prioridadePorCor(corObj) {
+  if (corObj === AZUL) return 0
+  if (corObj === VERDE) return 1
+  return 2 // CINZA
+}
 
 
 
@@ -86,6 +108,17 @@ function App() {
     .sort((a, b) => {
       const ta = a.timeslot
       const tb = b.timeslot
+      const corA = corPorMateria(a.subject?.name)
+      const corB = corPorMateria(b.subject?.name)
+      const prioridadeA = prioridadePorCor(corA)
+      const prioridadeB = prioridadePorCor(corB)
+      
+      // Primeiro ordena por prioridade de cor
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB
+      }
+      
+      // Se tiver a mesma cor, ordena por data e hora
       if (!ta || !tb) return 0
       return (ta.date + ta.startTime).localeCompare(tb.date + tb.startTime)
     })
@@ -127,12 +160,11 @@ function App() {
   // 3 - Lógica matemática para preencher os quadrados da grade mensal corretamente
 
   const diasDoGrid = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth)
-    const monthEnd = endOfMonth(monthStart)
-    const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 }) // Começa no Domingo
-    const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
-    return eachDayOfInterval({ start: gridStart, end: gridEnd })
-  }, [currentMonth])
+  const monthStart = startOfMonth(currentMonth)
+  const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 }) // Domingo da semana que contém o dia 1
+  const gridEnd = addDays(gridStart, 41) // sempre 42 dias à frente = 6 semanas completas, ponto final
+  return eachDayOfInterval({ start: gridStart, end: gridEnd })
+}, [currentMonth])
 
   const diasDaSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
  
@@ -152,31 +184,6 @@ function App() {
     }
 
  return (
-
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Chronac</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">Horários</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">Dashboard</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
- 
-     <SidebarInset>
         <div id="debug-root">
           <div className="Calendar">
  
@@ -185,7 +192,6 @@ function App() {
             {data && (
               <>
               <header>
-              <SidebarTrigger />
                 <section className="filters">
                   <select value={teacherFilter} onChange={(e) => setTeacherFilter(e.target.value)}>
                     <option value="">Todos os professores</option>
@@ -252,17 +258,21 @@ function App() {
               </div>
 
               {/* GRADE DE DIAS MENSAL */}
-              <div className="grid grid-cols-7 bg-slate-950 gap-[1px]">
+              <div className="grid grid-cols-7 bg-slate-950 gap-[1px]"
+              style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}
+>
+
                 {diasDoGrid.map((dia, idx) => {
                   const dataChave = format(dia, 'yyyy-MM-dd')
                   const aulasDoDia = lessonsByDate[dataChave] || []
                   const pertenceAoMesAtual = isSameMonth(dia, currentMonth)
                   const ehHoje = isSameDay(dia, new Date())
+                  
 
                   return (
                     <div 
                       key={idx} 
-                      className="bg-[#0f111a] min-h-[140px] p-2 flex flex-col justify-between group hover:bg-[#151926] transition-colors border border-slate-900/40 cursor-pointer"
+                      className="bg-[#0f111a] h-[140px] min-w-0 min-h-0 p-2 flex flex-col justify-between group hover:bg-[#151926] transition-colors border border-slate-900/40 cursor-pointer"
                       onClick={() => alert(`Ação para adicionar/gerenciar o dia: ${format(dia, 'dd/MM/yyyy')}`)}
                     >
                       {/* Cabeçalho do Card (Número do dia) */}
@@ -277,22 +287,23 @@ function App() {
                       </div>
 
                       {/* Lista das aulas pertencentes a este dia específico */}
-                      <div className="flex-1 flex flex-col gap-0.5 overflow-hidden">
-                        {aulasDoDia.slice(0, 3).map((aula, lIdx) => (
-                          <div 
-                            key={lIdx} 
-                            className="px-2 py-1 text-[10px] font-medium rounded-sm border-l-[3px] border-amber-500 bg-amber-500/10 text-amber-300 flex flex-col shadow-sm gap-0.5 hover:bg-amber-500/20 transition-colors cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between font-bold text-[12px] leading-none text-slate-400">
-                              <span>{aula.time}</span>
-                              <span className="text-slate-400 font-normal">{aula.room}</span>
-                              <span className="truncate text-slate-100 font-semibold leading-none my-0.5">{aula.subject}</span>
+                       <div className="flex-1 flex flex-col gap-0.5 overflow-hidden min-w-0">
+                          {aulasDoDia.slice(0, 3).map((aula, lIdx) => {
+                          const cor = corPorMateria(aula.subject)
+                          return (
+                            <div
+                              key={aula.id ?? lIdx}
+                              className={`px-1.5 py-2.5 text-[10px] leading-tight rounded-sm border-l-2 ${cor.border} ${cor.bg} ${cor.text} flex items-center gap-2 shadow-sm hover:opacity-80 transition-colors cursor-pointer min-w-0`}
+                              title={`${aula.time} · ${aula.subject} · ${aula.room} · ${aula.teacher}`}
+                            >
+                              <span className="shrink-0 font-bold text-slate-400">{aula.time?.split(' - ')[0] ?? '-'}</span>
+                              <span className="truncate min-w-0 font-semibold text-slate-100">{aula.subject ?? 'Sem matéria'}</span>
+                              <span className="shrink-0 text-slate-500">{aula.room ?? '-'}</span>
+                              <span className="shrink-0 text-slate-500">{aula.teacher ?? '-'}</span>
                             </div>
-                            <span className="text-[12px] text-slate-400 truncate">{aula.teacher}</span>
-                          </div>
-                        ))}
-                      </div>
-
+                          )
+                        })}
+                        </div>
                       {/* Indicador de overflow caso o dia tenha mais de 3 aulas */}
                       {aulasDoDia.length > 3 && (
                         <div className="text-[10px] text-blue-400 font-bold mt-1 pl-1">
@@ -308,8 +319,6 @@ function App() {
             )}
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
   )
 }
 
