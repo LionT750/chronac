@@ -72,9 +72,20 @@ function formatLesson(lesson) {
     room: lesson.room?.name ?? '-',
   }
 }
+
+// Timefold serializes the score as a string such as "0hard/-3soft".
+// A timetable is feasible when its hard component is zero.
+function isFeasible(score) {
+  if (typeof score === 'string') {
+    const hard = score.match(/^(-?\d+)hard/)
+    return hard != null && hard[1] === '0'
+  }
+  return score != null && score.feasible === true
+}
  
 function App() {
   const [data, setData] = useState(null)
+  const [hey, setHey] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const isAuthenticated = true
@@ -99,9 +110,21 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
+
+  const fetchHeyMaster = () => {
+    fetch('api/sayHeyMaster')
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.json()
+    })
+    .then(setHey)
+    .catch((err) => setError(err.message))
+    .finally(() => {})
+  }
  
   // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: kick off the initial fetch on mount
   useEffect(fetchTimetable, [])
+  useEffect(fetchHeyMaster, [])
  
   const allLessons = (data?.lessons ?? [])
     .slice()
