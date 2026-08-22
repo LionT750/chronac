@@ -16,23 +16,49 @@ class TimetableConstraintProviderTest {
     private static final Room ROOM1 = new Room("1", "Sala 114");
     private static final Room ROOM2 = new Room("2", "Sala 115");
 
-    private static final Timeslot MONDAY_W1 = new Timeslot("1", LocalDate.of(2026, 1, 5), DayOfWeek.MONDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot MONDAY_W2 = new Timeslot("2", LocalDate.of(2026, 1, 12), DayOfWeek.MONDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot MONDAY_W3 = new Timeslot("5", LocalDate.of(2026, 1, 19), DayOfWeek.MONDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot TUESDAY_W1 = new Timeslot("3", LocalDate.of(2026, 1, 6), DayOfWeek.TUESDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot TUESDAY_W2 = new Timeslot("7", LocalDate.of(2026, 1, 13), DayOfWeek.TUESDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot WEDNESDAY_W1 = new Timeslot("6", LocalDate.of(2026, 1, 7), DayOfWeek.WEDNESDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot SATURDAY = new Timeslot("4", LocalDate.of(2026, 1, 10), DayOfWeek.SATURDAY, java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    <<<<<<<HEAD
+    private static final Timeslot MONDAY_W1 = new Timeslot("1", LocalDate.of(2026, 1, 5), DayOfWeek.MONDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot MONDAY_W2 = new Timeslot("2", LocalDate.of(2026, 1, 12), DayOfWeek.MONDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot MONDAY_W3 = new Timeslot("5", LocalDate.of(2026, 1, 19), DayOfWeek.MONDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot TUESDAY_W1 = new Timeslot("3", LocalDate.of(2026, 1, 6), DayOfWeek.TUESDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot TUESDAY_W2 = new Timeslot("7", LocalDate.of(2026, 1, 13), DayOfWeek.TUESDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot WEDNESDAY_W1 = new Timeslot("6", LocalDate.of(2026, 1, 7), DayOfWeek.WEDNESDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot SATURDAY = new Timeslot("4", LocalDate.of(2026, 1, 10), DayOfWeek.SATURDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
 
-    private static final Subject SUBJECT_OOP = subject("OOP", "Alisson", LocalDate.of(2026, 9, 15), null, List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-    private static final Subject SUBJECT_ALG = subject("Algoritmos", "Rodolfo", LocalDate.of(2026, 9, 15), null, List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+    private static final Subject SUBJECT_OOP = subject("OOP", "Alisson", LocalDate.of(2026, 9, 15), null,
+            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+    private static final Subject SUBJECT_ALG = subject("Algoritmos", "Rodolfo", LocalDate.of(2026, 9, 15), null,
+            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
 
     private static Subject subject(String name, String teacher, LocalDate start, LocalDate end, List<DayOfWeek> days) {
         return new Subject(name, 96, teacher, start, end, List.of("Sala 114"), days);
-    }
+    }=======
 
-    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier = ConstraintVerifier.build(
-            new TimetableConstraintProvider(), Timetable.class, Lesson.class);
+    private static final Timeslot MONDAY_W1 = new Timeslot("1", java.time.LocalDate.of(2026, 1, 5), DayOfWeek.MONDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot MONDAY_W2 = new Timeslot("2", java.time.LocalDate.of(2026, 1, 12), DayOfWeek.MONDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot TUESDAY_W1 = new Timeslot("3", java.time.LocalDate.of(2026, 1, 6), DayOfWeek.TUESDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private static final Timeslot SATURDAY = new Timeslot("4", java.time.LocalDate.of(2026, 1, 10), DayOfWeek.SATURDAY,
+            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+
+    private static final Subject SUBJECT_OOP = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null,
+            List.of("Sala 114"),
+            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+    private static final Subject SUBJECT_ALG = new Subject("Algoritmos", 108, "Rodolfo", LocalDate.of(2026, 9, 15),
+            null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));>>>>>>>
+    dev
+
+    ConstraintVerifier<TimetableConstraintProvider,Timetable>constraintVerifier=ConstraintVerifier.build(new TimetableConstraintProvider(),Timetable.class,Lesson.class);
 
     @Test
     void roomConflict_whenSameTimeslotAndSameRoom() {
@@ -81,7 +107,10 @@ class TimetableConstraintProviderTest {
         Lesson lesson2 = new Lesson("2", SUBJECT_ALG);
         lesson2.setTimeslot(MONDAY_W1);
         lesson2.setRoom(ROOM1);
-        Lesson lesson3 = new Lesson("3", new Subject("BD", 72, "Nelma", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)));
+        Lesson lesson3 = new Lesson("3",
+                new Subject("BD", 72, "Nelma", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"),
+                        List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
+                                DayOfWeek.FRIDAY)));
         lesson3.setTimeslot(MONDAY_W1);
         lesson3.setRoom(ROOM1);
         constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
@@ -91,7 +120,8 @@ class TimetableConstraintProviderTest {
 
     @Test
     void roomPerSubject_whenRoomNotAllowed() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List
+                .of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
         Lesson lesson = new Lesson("1", subject);
         lesson.setTimeslot(MONDAY_W1);
         lesson.setRoom(ROOM2);
@@ -102,7 +132,8 @@ class TimetableConstraintProviderTest {
 
     @Test
     void roomPerSubject_whenRoomAllowed_noPenalty() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List
+                .of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
         Lesson lesson = new Lesson("1", subject);
         lesson.setTimeslot(MONDAY_W1);
         lesson.setRoom(ROOM1);
@@ -133,7 +164,8 @@ class TimetableConstraintProviderTest {
 
     @Test
     void subjectCompaction_lessonOnStartDate_noPenalty() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY));
+        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"),
+                List.of(DayOfWeek.MONDAY));
         subject.setWeeklyCadenceCap(1);
         Lesson lesson = new Lesson("1", subject);
         lesson.setTimeslot(MONDAY_W1);
@@ -145,7 +177,8 @@ class TimetableConstraintProviderTest {
 
     @Test
     void subjectCompaction_lessonTwoWeeksAfterStart_penalizesDays() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY));
+        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"),
+                List.of(DayOfWeek.MONDAY));
         subject.setWeeklyCadenceCap(1);
         Lesson lesson = new Lesson("1", subject);
         lesson.setTimeslot(MONDAY_W3);
@@ -246,6 +279,7 @@ class TimetableConstraintProviderTest {
     }
 
     @Test
+<<<<<<< HEAD
     void weekdayStability_switchesToEarlierWeekdayInNextWeek_penalizes() {
         Subject subject = SUBJECT_OOP;
         subject.setWeeklyCadenceCap(1);
@@ -313,5 +347,17 @@ class TimetableConstraintProviderTest {
         constraintVerifier.verifyThat(TimetableConstraintProvider::roomFill)
                 .given(MONDAY_W1, MONDAY_W2, MONDAY_W3, TUESDAY_W2, ROOM1, monday1, monday3, tuesday)
                 .penalizesBy(20);
-    }
+    }=======
+
+    void consecutiveWeeksSameWeekday_hasNextWeek_penalizesLast() {
+        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
+        lesson1.setTimeslot(MONDAY_W1);
+        lesson1.setRoom(ROOM1);
+        Lesson lesson2 = new Lesson("2", SUBJECT_OOP);
+        lesson2.setTimeslot(MONDAY_W2);
+        lesson2.setRoom(ROOM2);
+        constraintVerifier.verifyThat(TimetableConstraintProvider::consecutiveWeeksSameWeekday)
+                .given(lesson1, lesson2)
+                .penalizesBy(25);
+    }>>>>>>>dev
 }
