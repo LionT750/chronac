@@ -1,46 +1,12 @@
 #debug-root {
     display: flex;
-    flex-direction: column;
-    row-gap: 24px; /* or gap: 24px; */
-
-    max-width: 100%;
-    padding: 24px;
+    width: 100%;
     text-align: left;
     box-sizing: border-box;
-    background-color: #161616;
+    background-color: var(--bg);
 }
 
-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-header {
-  min-height: 30vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 48px 24px;
-}
-
-header h1 {
-  margin: 0;
-  max-width: 900px;
-
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  font-weight: 800;
-
-  color: #2b2b2f;
-  text-shadow:
-    0 1px 1px rgba(255, 255, 255, 0.8),
-    0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-button {
+.Calendar button {
   font: inherit;
   padding: 6px 14px;
   border-radius: 6px;
@@ -51,13 +17,19 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.Calendar button:hover {
   transform: scale(1.03);
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-button:active {
+.Calendar button:active {
   transform: scale(0.97);
+}
+
+.Calendar .btn{
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
 }
 
 .clear-btn {
@@ -65,12 +37,26 @@ button:active {
   margin-left: auto;
 }
 
-.filters {
-  display: flex;
-  gap: 5px;
+.update-btn {
+  cursor: pointer;
+  margin-left: auto;
 }
 
-button:disabled {
+.filters {
+  display: flex;
+  gap: 25px;
+  color: #ffffff;
+}
+
+select {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.Calendar button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -121,3 +107,23 @@ pre {
   border-radius: 6px;
   font-size: 12px;
 }
+
+.Calendar {
+  flex: 1 auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+
+
+
