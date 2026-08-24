@@ -2,7 +2,6 @@ package br.com.chronac.config;
 
 import java.io.IOException;
 
-import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -23,28 +22,7 @@ public class TimefoldScoreJacksonModule {
         SimpleModule module = new SimpleModule("TimefoldScoreModule");
         module.addSerializer(HardSoftScore.class, new HardSoftScoreSerializer());
         module.addDeserializer(HardSoftScore.class, new HardSoftScoreDeserializer());
-        module.addSerializer(HardMediumSoftScore.class, new HardMediumSoftScoreSerializer());
-        module.addDeserializer(HardMediumSoftScore.class, new HardMediumSoftScoreDeserializer());
         return module;
-    }
-
-    static class HardMediumSoftScoreSerializer extends JsonSerializer<HardMediumSoftScore> {
-        @Override
-        public void serialize(HardMediumSoftScore score, JsonGenerator gen, SerializerProvider serializers)
-                throws IOException {
-            gen.writeString(score.toString());
-        }
-    }
-
-    static class HardMediumSoftScoreDeserializer extends JsonDeserializer<HardMediumSoftScore> {
-        @Override
-        public HardMediumSoftScore deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            String text = p.getValueAsString();
-            if (text == null || text.isEmpty()) {
-                return null;
-            }
-            return HardMediumSoftScore.parseScore(text);
-        }
     }
 
     static class HardSoftScoreSerializer extends JsonSerializer<HardSoftScore> {

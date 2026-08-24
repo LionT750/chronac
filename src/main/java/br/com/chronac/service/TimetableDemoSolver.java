@@ -1,12 +1,13 @@
 package br.com.chronac.service;
 
+import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import br.com.chronac.demo.TimetableDemoData;
 import br.com.chronac.domain.Lesson;
 import br.com.chronac.domain.Timeslot;
 import br.com.chronac.domain.Timetable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -28,44 +30,39 @@ import java.util.stream.Collectors;
 public class TimetableDemoSolver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TimetableDemoSolver.class);
+    private static final long DEMO_PROBLEM_ID = 0L;
 
-    private final TimetableGenerator timetableGenerator;
-    private final long demoSeed;
-    private final long demoSeconds;
-    private final long demoUnimprovedSeconds;
+    private final SolverManager<Timetable> solverManager;
     private final Object lock = new Object();
     private Timetable problem;
     private Timetable bestSolution;
 
-    public TimetableDemoSolver(TimetableGenerator timetableGenerator,
-            @Value("${chronac.demo.seed:" + TimetableGenerator.DEMO_SEED + "}") long demoSeed,
-            @Value("${chronac.demo.seconds:" + TimetableGenerator.DEMO_BUDGET_SECONDS + "}") long demoSeconds,
-            @Value("${chronac.demo.unimproved-seconds:"
-                    + TimetableGenerator.DEMO_UNIMPROVED_SECONDS + "}") long demoUnimprovedSeconds) {
-        this.timetableGenerator = timetableGenerator;
-        this.demoSeed = demoSeed;
-        this.demoSeconds = demoSeconds;
-        this.demoUnimprovedSeconds = demoUnimprovedSeconds;
+    public TimetableDemoSolver(SolverManager<Timetable> solverManager) {
+        this.solverManager = solverManager;
     }
 
-    /**
-     * Solves the demo with the pinned seed, so GET /api/timetable serves the very
-     * same timetable on every restart. A pitch needs a schedule you can talk
-     * through, not whatever the last run happened to find.
-     */
     @EventListener(ApplicationReadyEvent.class)
     public void solveDemoOnStartup() {
         synchronized (lock) {
             problem = TimetableDemoData.buildDemoProblem();
         }
 
+        SolverJob<Timetable> solverJob = solverManager.solveAndListen(DEMO_PROBLEM_ID, problem,
+                bestSolutionFound -> {
+                    synchronized (lock) {
+                        this.bestSolution = bestSolutionFound;
+                    }
+                });
+
         CompletableFuture.runAsync(() -> {
             Timetable finalSolution;
             try {
-                finalSolution = timetableGenerator.solveSeeded(
-                        TimetableDemoData.buildDemoProblem(), demoSeed, demoSeconds, demoUnimprovedSeconds);
-            } catch (RuntimeException e) {
-                LOGGER.error("Demo solve failed.", e);
+                finalSolution = solverJob.getFinalBestSolution();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (ExecutionException e) {
+                LOGGER.error("Demo solve failed.", e.getCause());
                 return;
             }
             synchronized (lock) {
@@ -87,27 +84,16 @@ public class TimetableDemoSolver {
         }
     }
 
-    private void reportFinalSolution(Timetable solution) {
-        LOGGER.info("Demo solved with pinned seed {} (budget {}s, stops after {}s without progress).",
-                demoSeed, demoSeconds, demoUnimprovedSeconds);
-        report(solution);
-    }
-
-    private static void report(Timetable solution) {
-        if (solution.getScore() != null
-                && (solution.getScore().hardScore() < 0 || solution.getScore().mediumScore() < 0)) {
+    private static void reportFinalSolution(Timetable solution) {
+        if (solution.getScore() != null && solution.getScore().hardScore() < 0) {
             LOGGER.warn("========== INFEASIBLE SCHEDULE ==========");
-            LOGGER.warn("The solver could not satisfy all hard/medium constraints.");
+            LOGGER.warn("The solver could not satisfy all hard constraints.");
             LOGGER.warn("Score: {}", solution.getScore());
             LOGGER.warn("This means no valid timetable exists for the given input data.");
             LOGGER.warn("Consider: adding more rooms/timeslots, reducing lesson count, or relaxing constraints.");
             LOGGER.warn("=========================================");
         } else {
-            LOGGER.info("Schedule is feasible. Score: {} ({} idle evenings, {} spilled lessons, {} absence holes)",
-                    solution.getScore(),
-                    TimetableGenerator.countIdleEvenings(solution),
-                    TimetableGenerator.countOffHomeLessons(solution),
-                    TimetableGenerator.countHoles(solution));
+            LOGGER.info("Schedule is feasible. Score: {}", solution.getScore());
         }
 
         printTimetable(solution);
