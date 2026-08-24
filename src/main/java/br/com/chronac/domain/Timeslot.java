@@ -48,15 +48,8 @@ public class Timeslot {
         return dayOfWeek;
     }
 
-    /**
-     * A monotonically increasing week index (epoch weeks, Monday-based) rather than
-     * an ISO week-of-year. Consecutive calendar weeks always differ by exactly 1,
-     * so week arithmetic (spans, adjacency) stays correct across the New Year - an
-     * ISO week-of-year wraps 53 -> 1 and breaks it.
-     */
-    public Long getWeekIndex() {
-        return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                .toEpochDay() / 7;
+    public Long getWeekOfYear() {
+        return (long) date.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR);
     }
 
     public LocalTime getStartTime() {

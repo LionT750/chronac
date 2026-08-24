@@ -36,14 +36,6 @@ public class Semester {
 
     // Getters and setters
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
     public List<LocalDate> getValidClassDays() {
         return validClassDays;
     }
