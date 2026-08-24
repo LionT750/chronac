@@ -1,363 +1,418 @@
 package br.com.chronac.solver;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.List;
 import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
-import br.com.chronac.domain.Lesson;
+import br.com.chronac.domain.Block;
 import br.com.chronac.domain.Room;
+import br.com.chronac.domain.Slot;
 import br.com.chronac.domain.Subject;
+import br.com.chronac.domain.SubjectPart;
+import br.com.chronac.domain.TeacherSchedule;
 import br.com.chronac.domain.Timetable;
-import br.com.chronac.domain.Timeslot;
+import br.com.chronac.domain.Track;
+import br.com.chronac.domain.Turma;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * One test per constraint, on the smallest arrangement that makes it fire.
+ *
+ * The fixtures build tracks by hand rather than going through the demo data, so a
+ * failure points at the rule and not at the calendar.
+ */
 class TimetableConstraintProviderTest {
 
-    private static final Room ROOM1 = new Room("1", "Sala 114");
-    private static final Room ROOM2 = new Room("2", "Sala 115");
+    private static final String ALISSON = "Alisson";
+    private static final String RODOLFO = "Rodolfo";
+    private static final LocalDate FIRST_MONDAY = LocalDate.of(2026, 9, 14);
 
-    <<<<<<<HEAD
-    private static final Timeslot MONDAY_W1 = new Timeslot("1", LocalDate.of(2026, 1, 5), DayOfWeek.MONDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot MONDAY_W2 = new Timeslot("2", LocalDate.of(2026, 1, 12), DayOfWeek.MONDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot MONDAY_W3 = new Timeslot("5", LocalDate.of(2026, 1, 19), DayOfWeek.MONDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot TUESDAY_W1 = new Timeslot("3", LocalDate.of(2026, 1, 6), DayOfWeek.TUESDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot TUESDAY_W2 = new Timeslot("7", LocalDate.of(2026, 1, 13), DayOfWeek.TUESDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot WEDNESDAY_W1 = new Timeslot("6", LocalDate.of(2026, 1, 7), DayOfWeek.WEDNESDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot SATURDAY = new Timeslot("4", LocalDate.of(2026, 1, 10), DayOfWeek.SATURDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
+    private final ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier =
+            ConstraintVerifier.build(new TimetableConstraintProvider(), Timetable.class, Block.class);
 
-    private static final Subject SUBJECT_OOP = subject("OOP", "Alisson", LocalDate.of(2026, 9, 15), null,
-            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-    private static final Subject SUBJECT_ALG = subject("Algoritmos", "Rodolfo", LocalDate.of(2026, 9, 15), null,
-            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-
-    private static Subject subject(String name, String teacher, LocalDate start, LocalDate end, List<DayOfWeek> days) {
-        return new Subject(name, 96, teacher, start, end, List.of("Sala 114"), days);
-    }=======
-
-    private static final Timeslot MONDAY_W1 = new Timeslot("1", java.time.LocalDate.of(2026, 1, 5), DayOfWeek.MONDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot MONDAY_W2 = new Timeslot("2", java.time.LocalDate.of(2026, 1, 12), DayOfWeek.MONDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot TUESDAY_W1 = new Timeslot("3", java.time.LocalDate.of(2026, 1, 6), DayOfWeek.TUESDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-    private static final Timeslot SATURDAY = new Timeslot("4", java.time.LocalDate.of(2026, 1, 10), DayOfWeek.SATURDAY,
-            java.time.LocalTime.of(18, 40), java.time.LocalTime.of(22, 0));
-
-    private static final Subject SUBJECT_OOP = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null,
-            List.of("Sala 114"),
-            List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-    private static final Subject SUBJECT_ALG = new Subject("Algoritmos", 108, "Rodolfo", LocalDate.of(2026, 9, 15),
-            null, List.of("Sala 114"), List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                    DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));>>>>>>>
-    dev
-
-    ConstraintVerifier<TimetableConstraintProvider,Timetable>constraintVerifier=ConstraintVerifier.build(new TimetableConstraintProvider(),Timetable.class,Lesson.class);
+    // ************************************************************************
+    // HARD
+    // ************************************************************************
 
     @Test
-    void roomConflict_whenSameTimeslotAndSameRoom() {
-        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
-        lesson1.setTimeslot(MONDAY_W1);
-        lesson1.setRoom(ROOM1);
-        Lesson lesson2 = new Lesson("2", SUBJECT_ALG);
-        lesson2.setTimeslot(MONDAY_W1);
-        lesson2.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
-                .given(lesson1, lesson2)
-                .penalizesBy(1);
-    }
+    void overflowStaysSporadic_whenTheSpillIsTooBigToBeAHotfix() {
+        Fixture fixture = new Fixture();
+        // 8 lessons starting on the last-but-one Monday: 6 of them have nowhere to go
+        // on the home weekday, which is 3 more than counts as sporadic.
+        Block block = fixture.block("UC", ALISSON, 8);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 8));
 
-    @Test
-    void roomConflict_whenDifferentRoom_noPenalty() {
-        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
-        lesson1.setTimeslot(MONDAY_W1);
-        lesson1.setRoom(ROOM1);
-        Lesson lesson2 = new Lesson("2", SUBJECT_ALG);
-        lesson2.setTimeslot(MONDAY_W1);
-        lesson2.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
-                .given(lesson1, lesson2)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void roomConflict_whenDifferentTimeslot_noPenalty() {
-        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
-        lesson1.setTimeslot(MONDAY_W1);
-        lesson1.setRoom(ROOM1);
-        Lesson lesson2 = new Lesson("2", SUBJECT_ALG);
-        lesson2.setTimeslot(MONDAY_W2);
-        lesson2.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
-                .given(lesson1, lesson2)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void roomConflict_threeLessonsSameSlotAndRoom_threePairs() {
-        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
-        lesson1.setTimeslot(MONDAY_W1);
-        lesson1.setRoom(ROOM1);
-        Lesson lesson2 = new Lesson("2", SUBJECT_ALG);
-        lesson2.setTimeslot(MONDAY_W1);
-        lesson2.setRoom(ROOM1);
-        Lesson lesson3 = new Lesson("3",
-                new Subject("BD", 72, "Nelma", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"),
-                        List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
-                                DayOfWeek.FRIDAY)));
-        lesson3.setTimeslot(MONDAY_W1);
-        lesson3.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
-                .given(lesson1, lesson2, lesson3)
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowStaysSporadic)
+                .given(fixture.facts(block))
                 .penalizesBy(3);
     }
 
     @Test
-    void roomPerSubject_whenRoomNotAllowed() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List
-                .of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-        Lesson lesson = new Lesson("1", subject);
-        lesson.setTimeslot(MONDAY_W1);
-        lesson.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomPerSubject)
-                .given(lesson)
+    void overflowStaysSporadic_whenEverythingFitsItsWeekday() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 4);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowStaysSporadic)
+                .given(fixture.facts(block))
+                .penalizesBy(0);
+    }
+
+    @Test
+    void blocksDoNotOverlap_whenTwoRunsShareAStretchOfTheSameWeekday() {
+        Fixture fixture = new Fixture();
+        Block first = fixture.block("UC1", ALISSON, 5);
+        first.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block second = fixture.block("UC2", RODOLFO, 3);
+        // Starts inside the first run: indexes 3 and 4 are claimed twice.
+        second.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::blocksDoNotOverlap)
+                .given(fixture.facts(first, second))
+                .penalizesBy(2);
+    }
+
+    @Test
+    void blocksDoNotOverlap_whenOneRunHandsOverToTheNext() {
+        Fixture fixture = new Fixture();
+        Block first = fixture.block("UC1", ALISSON, 5);
+        first.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block second = fixture.block("UC2", RODOLFO, 3);
+        second.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 5));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::blocksDoNotOverlap)
+                .given(fixture.facts(first, second))
+                .penalizesBy(0);
+    }
+
+    @Test
+    void teacherSingleBooked_whenTheSameTeacherIsInBothTurmasOnOneEvening() {
+        Fixture fixture = new Fixture();
+        Block jovem = fixture.block("UC1", ALISSON, 2);
+        jovem.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        // Second turma, same weekday, same dates, same teacher.
+        Block tecnico = fixture.otherTurmaBlock("UC2", ALISSON, 2);
+        tecnico.setStartSlot(fixture.otherSlot(DayOfWeek.MONDAY, 0));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::teacherSingleBooked)
+                .given(fixture.facts(jovem, tecnico))
+                .penalizesBy(2);
+    }
+
+    @Test
+    void ucPartsChained_whenTheSecondTeacherStartsOnAnotherWeekday() {
+        Fixture fixture = new Fixture();
+        List<Block> parts = fixture.twoPartBlocks("UC11", ALISSON, 3, RODOLFO, 3);
+        parts.get(0).setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        parts.get(1).setStartSlot(fixture.slot(DayOfWeek.TUESDAY, 3));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::ucPartsChained)
+                .given(fixture.facts(parts.get(0), parts.get(1)))
                 .penalizesBy(1);
     }
 
     @Test
-    void roomPerSubject_whenRoomAllowed_noPenalty() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 9, 15), null, List.of("Sala 114"), List
-                .of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
-        Lesson lesson = new Lesson("1", subject);
-        lesson.setTimeslot(MONDAY_W1);
-        lesson.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomPerSubject)
-                .given(lesson)
+    void ucPartsChained_whenTheSecondTeacherTakesOverTheNextEvening() {
+        Fixture fixture = new Fixture();
+        List<Block> parts = fixture.twoPartBlocks("UC11", ALISSON, 3, RODOLFO, 3);
+        parts.get(0).setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        parts.get(1).setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::ucPartsChained)
+                .given(fixture.facts(parts.get(0), parts.get(1)))
                 .penalizesBy(0);
     }
 
     @Test
-    void daysWithoutClass_onWeekend_penalizes() {
-        Lesson lesson = new Lesson("1", SUBJECT_OOP);
-        lesson.setTimeslot(SATURDAY);
-        lesson.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::daysWithoutClass)
-                .given(lesson)
+    void teachersLiveInFirstFullWeek_penalizesByHowManyWeeksLateTheTeacherStarts() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 2);
+        // The turma's tracks open in week 0; this teacher only appears in week 3.
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::teachersLiveInFirstFullWeek)
+                .given(fixture.facts(block))
+                .penalizesBy(3);
+    }
+
+    @Test
+    void overflowWellPlaced_whenTheSpillHasNowhereToGo() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 8);
+        // 8 lessons from index 5 of a 10-slot track: 3 spill, and no weekday was borrowed.
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 5));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowWellPlaced)
+                .given(fixture.facts(block))
+                .penalizesBy(3);
+    }
+
+    @Test
+    void overflowWellPlaced_whenTheSpillGoesBackOntoItsOwnWeekday() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 8);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 5));
+        // Same weekday: that is a gap in the run, not a reposicao. And only one of the
+        // three spilled lessons still fits before the track ends.
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.MONDAY, 9));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowWellPlaced)
+                .given(fixture.facts(block))
+                .penalizesBy(3);
+    }
+
+    @Test
+    void overflowWellPlaced_whenTheSpillLandsOnAnotherWeekdayThatHoldsIt() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 8);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 5));
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.TUESDAY, 5));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowWellPlaced)
+                .given(fixture.facts(block))
+                .penalizesBy(0);
+    }
+
+    @Test
+    void overflowWellPlaced_whenAWeekdayIsBorrowedButNothingSpilled() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 3);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.TUESDAY, 0));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::overflowWellPlaced)
+                .given(fixture.facts(block))
+                .penalizesBy(1);
+    }
+
+    // ************************************************************************
+    // MEDIUM AND SOFT
+    // ************************************************************************
+
+    @Test
+    void offHomeMidSemester_whenTheBorrowedEveningIsNowhereNearTheEndOfTheRun() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 11);
+        // Runs Mondays 0..9, so its last evening is week 9; the spill sits in week 0.
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.TUESDAY, 0));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::offHomeMidSemester)
+                .given(fixture.facts(block))
                 .penalizesBy(1);
     }
 
     @Test
-    void daysWithoutClass_onWeekday_noPenalty() {
-        Lesson lesson = new Lesson("1", SUBJECT_OOP);
-        lesson.setTimeslot(MONDAY_W1);
-        lesson.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::daysWithoutClass)
-                .given(lesson)
+    void offHomeLate_whenTheBorrowedEveningClosesOutTheRun() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 11);
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.TUESDAY, 9));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::offHomeLate)
+                .given(fixture.facts(block))
+                .penalizesBy(1);
+        constraintVerifier.verifyThat(TimetableConstraintProvider::offHomeMidSemester)
+                .given(fixture.facts(block))
                 .penalizesBy(0);
     }
 
     @Test
-    void subjectCompaction_lessonOnStartDate_noPenalty() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"),
-                List.of(DayOfWeek.MONDAY));
-        subject.setWeeklyCadenceCap(1);
-        Lesson lesson = new Lesson("1", subject);
-        lesson.setTimeslot(MONDAY_W1);
-        lesson.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::subjectCompaction)
-                .given(lesson)
+    void offHomeDriftsFromRunEnd_chargesAWeekAtATimeForTheDistance() {
+        Fixture fixture = new Fixture();
+        Block block = fixture.block("UC", ALISSON, 11);
+        // Last home evening is Monday of week 9, the spill is Tuesday of week 4. That
+        // is 34 days apart, so four whole weeks - the charge counts elapsed weeks
+        // between the two dates, not the difference between week numbers.
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        block.setOverflowStartSlot(fixture.slot(DayOfWeek.TUESDAY, 4));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::offHomeDriftsFromRunEnd)
+                .given(fixture.facts(block))
+                .penalizesBy(4);
+    }
+
+    @Test
+    void idleEveningInsideLiveTrack_countsOnlyTheHolesBetweenFirstAndLastLesson() {
+        Fixture fixture = new Fixture();
+        Block first = fixture.block("UC1", ALISSON, 2);
+        first.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block second = fixture.block("UC2", RODOLFO, 2);
+        // Leaves indexes 2 and 3 empty in the middle; indexes 6..9 are tail and free.
+        second.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 4));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::idleEveningInsideLiveTrack)
+                .given(fixture.facts(first, second))
+                .penalizesBy(2);
+    }
+
+    @Test
+    void idleEveningInsideLiveTrack_whenARunSkipsATeacherAbsence() {
+        Fixture fixture = new Fixture();
+        // Away on the second and third Monday: the run stretches and leaves two holes.
+        Block block = fixture.blockAway("UC", ALISSON, 5,
+                Set.of(FIRST_MONDAY.plusWeeks(1), FIRST_MONDAY.plusWeeks(2)));
+        block.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::idleEveningInsideLiveTrack)
+                .given(fixture.facts(block))
+                .penalizesBy(2);
+    }
+
+    @Test
+    void avoidableHandoff_whenANewTeacherTakesOverWhileTheOutgoingOneStillHadWork() {
+        Fixture fixture = new Fixture();
+        Block outgoing = fixture.block("UC1", ALISSON, 3);
+        outgoing.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block incoming = fixture.block("UC2", RODOLFO, 3);
+        incoming.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
+        // Alisson still has a UC in this turma, and it only starts later.
+        Block pending = fixture.block("UC3", ALISSON, 2);
+        pending.setStartSlot(fixture.slot(DayOfWeek.TUESDAY, 6));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::avoidableHandoff)
+                .given(fixture.facts(outgoing, incoming, pending))
+                .penalizesBy(1);
+    }
+
+    @Test
+    void avoidableHandoff_whenTheOutgoingTeacherHadNothingLeftToTeach() {
+        Fixture fixture = new Fixture();
+        Block outgoing = fixture.block("UC1", ALISSON, 3);
+        outgoing.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block incoming = fixture.block("UC2", RODOLFO, 3);
+        incoming.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
+
+        constraintVerifier.verifyThat(TimetableConstraintProvider::avoidableHandoff)
+                .given(fixture.facts(outgoing, incoming))
                 .penalizesBy(0);
     }
 
     @Test
-    void subjectCompaction_lessonTwoWeeksAfterStart_penalizesDays() {
-        Subject subject = new Subject("OOP", 96, "Alisson", LocalDate.of(2026, 1, 5), null, List.of("Sala 114"),
-                List.of(DayOfWeek.MONDAY));
-        subject.setWeeklyCadenceCap(1);
-        Lesson lesson = new Lesson("1", subject);
-        lesson.setTimeslot(MONDAY_W3);
-        lesson.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::subjectCompaction)
-                .given(lesson)
-                .penalizesBy(14);
-    }
+    void avoidableHandoff_whenTheSameTeacherChainsTheirNextSubject() {
+        Fixture fixture = new Fixture();
+        Block outgoing = fixture.block("UC1", ALISSON, 3);
+        outgoing.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 0));
+        Block incoming = fixture.block("UC2", ALISSON, 3);
+        incoming.setStartSlot(fixture.slot(DayOfWeek.MONDAY, 3));
 
-    @Test
-    void cadenceOverrun_lessonsBeyondCap_penalizesExcess() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(2);
-        Lesson monday = new Lesson("1", subject);
-        monday.setTimeslot(MONDAY_W1);
-        monday.setRoom(ROOM1);
-        Lesson tuesday = new Lesson("2", subject);
-        tuesday.setTimeslot(TUESDAY_W1);
-        tuesday.setRoom(ROOM2);
-        Lesson wednesday = new Lesson("3", subject);
-        wednesday.setTimeslot(WEDNESDAY_W1);
-        wednesday.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::cadenceOverrun)
-                .given(monday, tuesday, wednesday)
-                .penalizesBy(20);
-    }
-
-    @Test
-    void cadenceOverrun_withinCap_noPenalty() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(3);
-        Lesson monday = new Lesson("1", subject);
-        monday.setTimeslot(MONDAY_W1);
-        monday.setRoom(ROOM1);
-        Lesson tuesday = new Lesson("2", subject);
-        tuesday.setTimeslot(TUESDAY_W1);
-        tuesday.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::cadenceOverrun)
-                .given(monday, tuesday)
+        constraintVerifier.verifyThat(TimetableConstraintProvider::avoidableHandoff)
+                .given(fixture.facts(outgoing, incoming))
                 .penalizesBy(0);
     }
 
-    @Test
-    void cadenceSteadiness_partialActiveWeek_penalizes() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(2);
-        Lesson monday = new Lesson("1", subject);
-        monday.setTimeslot(MONDAY_W1);
-        monday.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::cadenceSteadiness)
-                .given(monday)
-                .penalizesBy(8);
+    // ************************************************************************
+    // Fixture: two turmas, Monday and Tuesday tracks of 10 evenings each
+    // ************************************************************************
+
+    private static final class Fixture {
+
+        private final Turma turma = new Turma("Turma A", List.of("Sala 114"), List.of());
+        private final Turma otherTurma = new Turma("Turma B", List.of("Sala 115"), List.of());
+        private final List<Track> tracks = new ArrayList<>();
+        private final List<Object> extraFacts = new ArrayList<>();
+
+        Fixture() {
+            turma.setFirstViableWeek(weekIndex(FIRST_MONDAY));
+            otherTurma.setFirstViableWeek(weekIndex(FIRST_MONDAY));
+            for (Turma owner : List.of(turma, otherTurma)) {
+                for (DayOfWeek weekday : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY)) {
+                    tracks.add(new Track(owner, weekday, dates(weekday)));
+                }
+            }
+            extraFacts.add(new Room("1", "Sala 114"));
+            extraFacts.add(new Room("2", "Sala 115"));
+            extraFacts.add(new TeacherSchedule(ALISSON));
+            extraFacts.add(new TeacherSchedule(RODOLFO));
+        }
+
+        private static List<LocalDate> dates(DayOfWeek weekday) {
+            LocalDate first = FIRST_MONDAY.plusDays(weekday.getValue() - 1L);
+            List<LocalDate> dates = new ArrayList<>();
+            for (int week = 0; week < 10; week++) {
+                dates.add(first.plusWeeks(week));
+            }
+            return dates;
+        }
+
+        private static long weekIndex(LocalDate date) {
+            return date.toEpochDay() / 7;
+        }
+
+        Track track(Turma owner, DayOfWeek weekday) {
+            return tracks.stream()
+                    .filter(candidate -> candidate.getTurma() == owner && candidate.getDayOfWeek() == weekday)
+                    .findFirst()
+                    .orElseThrow();
+        }
+
+        Slot slot(DayOfWeek weekday, int index) {
+            return track(turma, weekday).slotAt(index);
+        }
+
+        Slot otherSlot(DayOfWeek weekday, int index) {
+            return track(otherTurma, weekday).slotAt(index);
+        }
+
+        Block block(String name, String teacher, int lessons) {
+            return blockAway(name, teacher, lessons, Set.of());
+        }
+
+        Block blockAway(String name, String teacher, int lessons, Set<LocalDate> away) {
+            return newBlock(turma, name, teacher, lessons, away);
+        }
+
+        Block otherTurmaBlock(String name, String teacher, int lessons) {
+            return newBlock(otherTurma, name, teacher, lessons, Set.of());
+        }
+
+        private Block newBlock(Turma owner, String name, String teacher, int lessons, Set<LocalDate> away) {
+            Subject subject = new Subject(name, FIRST_MONDAY, null, owner.getRooms(),
+                    List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY));
+            subject.setTurma(owner);
+            subject.addPart(teacher, lessons * SubjectPart.HOURS_PER_LESSON);
+            SubjectPart part = subject.getParts().get(0);
+            extraFacts.add(part);
+            return new Block(part, allowedSlots(owner), away);
+        }
+
+        /** Both parts of one UC, so the chaining rule has something to bind. */
+        List<Block> twoPartBlocks(String name, String firstTeacher, int firstLessons,
+                String secondTeacher, int secondLessons) {
+            Subject subject = new Subject(name, FIRST_MONDAY, null, turma.getRooms(),
+                    List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY));
+            subject.setTurma(turma);
+            subject.addPart(firstTeacher, firstLessons * SubjectPart.HOURS_PER_LESSON);
+            subject.addPart(secondTeacher, secondLessons * SubjectPart.HOURS_PER_LESSON);
+            List<Block> blocks = new ArrayList<>();
+            for (SubjectPart part : subject.getParts()) {
+                extraFacts.add(part);
+                blocks.add(new Block(part, allowedSlots(turma), Set.of()));
+            }
+            return blocks;
+        }
+
+        private List<Slot> allowedSlots(Turma owner) {
+            List<Slot> slots = new ArrayList<>();
+            for (Track track : tracks) {
+                if (track.getTurma() == owner) {
+                    slots.addAll(track.getSlots());
+                }
+            }
+            return slots;
+        }
+
+        /** Everything the constraint streams need to see, blocks included. */
+        Object[] facts(Block... blocks) {
+            List<Object> facts = new ArrayList<>(extraFacts);
+            facts.addAll(tracks);
+            facts.add(turma);
+            facts.add(otherTurma);
+            facts.addAll(List.of(blocks));
+            return facts.toArray();
+        }
     }
-
-    @Test
-    void cadenceSteadiness_fullWeek_noPenalty() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(2);
-        Lesson monday = new Lesson("1", subject);
-        monday.setTimeslot(MONDAY_W1);
-        monday.setRoom(ROOM1);
-        Lesson tuesday = new Lesson("2", subject);
-        tuesday.setTimeslot(TUESDAY_W1);
-        tuesday.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::cadenceSteadiness)
-                .given(monday, tuesday)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void weekdayStability_sameWeekdayFromWeekToWeek_noPenalty() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(1);
-        Lesson monday1 = new Lesson("1", subject);
-        monday1.setTimeslot(MONDAY_W1);
-        monday1.setRoom(ROOM1);
-        Lesson monday2 = new Lesson("2", subject);
-        monday2.setTimeslot(MONDAY_W2);
-        monday2.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::weekdayStability)
-                .given(monday1, monday2)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void weekdayStability_switchesWeekdayMidBlock_penalizes() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(1);
-        Lesson monday = new Lesson("1", subject);
-        monday.setTimeslot(MONDAY_W1);
-        monday.setRoom(ROOM1);
-        Lesson tuesday = new Lesson("2", subject);
-        tuesday.setTimeslot(TUESDAY_W2);
-        tuesday.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::weekdayStability)
-                .given(monday, tuesday)
-                .penalizesBy(25);
-    }
-
-    @Test
-<<<<<<< HEAD
-    void weekdayStability_switchesToEarlierWeekdayInNextWeek_penalizes() {
-        Subject subject = SUBJECT_OOP;
-        subject.setWeeklyCadenceCap(1);
-        Lesson wednesday = new Lesson("1", subject);
-        wednesday.setTimeslot(WEDNESDAY_W1);
-        wednesday.setRoom(ROOM1);
-        Lesson monday = new Lesson("2", subject);
-        monday.setTimeslot(MONDAY_W2);
-        monday.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::weekdayStability)
-                .given(wednesday, monday)
-                .penalizesBy(25);
-    }
-
-    @Test
-    void roomFill_emptySlotInsideActiveSpan_penalizes() {
-        Lesson monday1 = new Lesson("1", SUBJECT_OOP);
-        monday1.setTimeslot(MONDAY_W1);
-        monday1.setRoom(ROOM1);
-        Lesson monday3 = new Lesson("2", SUBJECT_OOP);
-        monday3.setTimeslot(MONDAY_W3);
-        monday3.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomFill)
-                .given(MONDAY_W1, MONDAY_W2, MONDAY_W3, ROOM1, monday1, monday3)
-                .penalizesBy(20);
-    }
-
-    @Test
-    void roomFill_fullSpan_noPenalty() {
-        Lesson monday1 = new Lesson("1", SUBJECT_OOP);
-        monday1.setTimeslot(MONDAY_W1);
-        monday1.setRoom(ROOM1);
-        Lesson monday2 = new Lesson("2", SUBJECT_ALG);
-        monday2.setTimeslot(MONDAY_W2);
-        monday2.setRoom(ROOM1);
-        Lesson monday3 = new Lesson("3", SUBJECT_OOP);
-        monday3.setTimeslot(MONDAY_W3);
-        monday3.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomFill)
-                .given(MONDAY_W1, MONDAY_W2, MONDAY_W3, ROOM1, monday1, monday2, monday3)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void roomFill_emptyTail_noPenalty() {
-        Lesson monday1 = new Lesson("1", SUBJECT_OOP);
-        monday1.setTimeslot(MONDAY_W1);
-        monday1.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomFill)
-                .given(MONDAY_W1, MONDAY_W2, MONDAY_W3, ROOM1, monday1)
-                .penalizesBy(0);
-    }
-
-    @Test
-    void roomFill_weekdayDropsOutWhileRoomStillActive_penalizes() {
-        Lesson monday1 = new Lesson("1", SUBJECT_OOP);
-        monday1.setTimeslot(MONDAY_W1);
-        monday1.setRoom(ROOM1);
-        Lesson monday3 = new Lesson("2", SUBJECT_OOP);
-        monday3.setTimeslot(MONDAY_W3);
-        monday3.setRoom(ROOM1);
-        Lesson tuesday = new Lesson("3", SUBJECT_ALG);
-        tuesday.setTimeslot(TUESDAY_W2);
-        tuesday.setRoom(ROOM1);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomFill)
-                .given(MONDAY_W1, MONDAY_W2, MONDAY_W3, TUESDAY_W2, ROOM1, monday1, monday3, tuesday)
-                .penalizesBy(20);
-    }=======
-
-    void consecutiveWeeksSameWeekday_hasNextWeek_penalizesLast() {
-        Lesson lesson1 = new Lesson("1", SUBJECT_OOP);
-        lesson1.setTimeslot(MONDAY_W1);
-        lesson1.setRoom(ROOM1);
-        Lesson lesson2 = new Lesson("2", SUBJECT_OOP);
-        lesson2.setTimeslot(MONDAY_W2);
-        lesson2.setRoom(ROOM2);
-        constraintVerifier.verifyThat(TimetableConstraintProvider::consecutiveWeeksSameWeekday)
-                .given(lesson1, lesson2)
-                .penalizesBy(25);
-    }>>>>>>>dev
 }

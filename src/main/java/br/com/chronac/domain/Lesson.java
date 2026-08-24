@@ -1,35 +1,37 @@
 package br.com.chronac.domain;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.common.PlanningId;
-
-@PlanningEntity
+/**
+ * One evening of one UC, on a date, in a room.
+ *
+ * Lessons are no longer planned: {@link Block} is the planning entity and a
+ * lesson is what a block materializes into once it knows where it starts. This
+ * class exists so the API and the UI keep seeing the flat list of dated lessons
+ * they always saw, while the solver reasons about contiguous runs.
+ */
 public class Lesson {
 
-    @PlanningId
     private String id;
 
-    private Subject subject;
+    private SubjectPart part;
 
-    @PlanningVariable
     private Timeslot timeslot;
 
-    @PlanningVariable
     private Room room;
 
-    // Required by Timefold
+    // Required by Jackson
     public Lesson() {
     }
 
-    public Lesson(String id, Subject subject) {
+    public Lesson(String id, SubjectPart part, Timeslot timeslot, Room room) {
         this.id = id;
-        this.subject = subject;
+        this.part = part;
+        this.timeslot = timeslot;
+        this.room = room;
     }
 
     @Override
     public String toString() {
-        return subject.getName() + "(" + id + ")";
+        return getSubject().getName() + "(" + id + ")";
     }
 
     // ************************************************************************
@@ -41,11 +43,16 @@ public class Lesson {
     }
 
     public Subject getSubject() {
-        return subject;
+        return part.getSubject();
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public SubjectPart getPart() {
+        return part;
     }
 
     public String getTeacher() {
-        return subject.getTeacher();
+        return part.getTeacher();
     }
 
     public Timeslot getTimeslot() {
@@ -54,17 +61,5 @@ public class Lesson {
 
     public Room getRoom() {
         return room;
-    }
-
-    // ************************************************************************
-    // Setters
-    // ************************************************************************
-
-    public void setTimeslot(Timeslot timeslot) {
-        this.timeslot = timeslot;
-    }
-
-    public void setRoom(Room room) {
-        this.room = room;
     }
 }

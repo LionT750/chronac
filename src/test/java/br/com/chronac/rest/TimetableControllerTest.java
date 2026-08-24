@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"timefold.solver.termination.spent-limit=2s"})
+        properties = {"chronac.demo.seconds=5", "chronac.demo.unimproved-seconds=5"})
 class TimetableControllerTest {
 
     @Autowired
@@ -31,6 +31,19 @@ class TimetableControllerTest {
         assertThat(solved.get("lessons").size()).isGreaterThan(0);
         assertThat(solved.get("score").isTextual()).isTrue();
         assertThat(solved.get("score").asText()).contains("hard");
+
+        // The exact shape ui/src/App.jsx reads. Lesson stopped being the planning
+        // entity in favour of Block and is now materialized from it, so this is the
+        // contract that keeps the calendar rendering - assert it rather than trust it.
+        JsonNode lesson = solved.get("lessons").get(0);
+        assertThat(lesson.get("teacher").isTextual()).isTrue();
+        assertThat(lesson.get("subject").get("name").isTextual()).isTrue();
+        assertThat(lesson.get("room").get("name").asText()).startsWith("Sala ");
+        JsonNode timeslot = lesson.get("timeslot");
+        assertThat(timeslot.get("date").asText()).matches("\\d{4}-\\d{2}-\\d{2}");
+        assertThat(timeslot.get("dayOfWeek").isTextual()).isTrue();
+        assertThat(timeslot.get("startTime").asText()).startsWith("18:40");
+        assertThat(timeslot.get("endTime").asText()).startsWith("22:00");
     }
 
     @Test
