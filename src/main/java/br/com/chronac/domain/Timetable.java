@@ -11,7 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @PlanningSolution
@@ -32,6 +34,9 @@ public class Timetable {
     private List<Room> rooms;
 
     @ProblemFactCollectionProperty
+    private List<Subject> subjects;
+
+    @ProblemFactCollectionProperty
     private List<Week> weeks;
 
     @ProblemFactCollectionProperty
@@ -47,6 +52,7 @@ public class Timetable {
     public Timetable() {
         this.timeslots = List.of();
         this.rooms = List.of();
+        this.subjects = List.of();
         this.weeks = List.of();
         this.teacherSchedules = List.of();
         this.lessons = List.of();
@@ -57,6 +63,7 @@ public class Timetable {
         this.timeslots = List.copyOf(builder.timeslots);
         this.rooms = List.copyOf(builder.rooms);
         this.lessons = List.copyOf(builder.lessons);
+        this.subjects = List.copyOf(builder.subjects);
         this.weeks = List.copyOf(builder.weeks);
         this.teacherSchedules = List.copyOf(builder.teacherSchedules);
         this.score = null;
@@ -70,6 +77,7 @@ public class Timetable {
         private List<Timeslot> timeslots;
         private List<Room> rooms;
         private List<Lesson> lessons;
+        private List<Subject> subjects;
         private List<Week> weeks;
         private List<TeacherSchedule> teacherSchedules = List.of();
 
@@ -96,11 +104,37 @@ public class Timetable {
             return this;
         }
 
+        private Map<String, Integer> pendingDaysPerRoom() {
+            Map<String, Integer> pending = new HashMap<>();
+            for (Room room : rooms) {
+                pending.put(room.getName(), 0);
+            }
+            for (Subject subject : semester.getCurriculum().subjects.values()) {
+                int lessonCount = subject.getTotalHours() / HOURS_PER_LESSON;
+                for (String roomName : subject.getDesignedRooms()) {
+                    pending.merge(roomName, lessonCount, Integer::sum);
+                }
+            }
+            return pending;
+        }
+
+        private boolean isEligible(Room room, LocalDate date) {
+            return semester.getCurriculum().subjects.values().stream()
+                    .anyMatch(subject -> subject.getDesignedRooms().contains(room.getName())
+                            && subject.canHaveClassOn(date));
+        }
+
         private void createTimeslots() {
             List<Timeslot> generatedTimeslots = new ArrayList<>();
             long nextTimeslotId = 0L;
 
+            Map<String, Integer> pending = pendingDaysPerRoom();
+
             for (LocalDate validDay : semester.getValidClassDays()) {
+                if (pending.values().stream().allMatch(remaining -> remaining <= 0)) {
+                    break;
+                }
+
                 generatedTimeslots.add(
                         new Timeslot(
                                 Long.toString(nextTimeslotId++),
@@ -110,6 +144,12 @@ public class Timetable {
                                 LESSON_END
                         )
                 );
+
+                for (Room room : rooms) {
+                    if (isEligible(room, validDay)) {
+                        pending.merge(room.getName(), -1, Integer::sum);
+                    }
+                }
             }
 
             this.timeslots = generatedTimeslots;
@@ -136,6 +176,34 @@ public class Timetable {
             this.lessons = generatedLessons;
         }
 
+        private void capSubjectEndDatesToRequiredDays() {
+            for (Room room : rooms) {
+                List<Subject> roomSubjects = semester.getCurriculum().subjects.values().stream()
+                        .filter(subject -> subject.getDesignedRooms().contains(room.getName()))
+                        .toList();
+                int required = roomSubjects.stream()
+                        .mapToInt(subject -> subject.getTotalHours() / HOURS_PER_LESSON)
+                        .sum();
+                List<LocalDate> eligible = timeslots.stream()
+                        .map(Timeslot::getDate)
+                        .filter(date -> roomSubjects.stream().anyMatch(subject -> subject.canHaveClassOn(date)))
+                        .toList();
+                if (required == 0 || eligible.size() <= required) {
+                    continue;
+                }
+                LocalDate lastNeeded = eligible.get(required - 1);
+                for (Subject subject : roomSubjects) {
+                    if (subject.getEndDate() == null || subject.getEndDate().isAfter(lastNeeded)) {
+                        subject.setEndDate(lastNeeded);
+                    }
+                }
+            }
+        }
+
+        private void createSubjects() {
+            this.subjects = List.copyOf(semester.getCurriculum().subjects.values());
+        }
+
         private void createWeeks() {
             this.weeks = semester.getValidClassDays()
                     .stream()
@@ -158,6 +226,8 @@ public class Timetable {
 
             // Generate derived data automatically.
             createTimeslots();
+            capSubjectEndDatesToRequiredDays();
+            createSubjects();
             createWeeks();
             createLessons();
 
@@ -183,6 +253,10 @@ public class Timetable {
 
     public List<Lesson> getLessons() {
         return lessons;
+    }
+
+    public List<Subject> getSubjects() {
+        return subjects;
     }
 
     public List<Week> getWeeks() {
