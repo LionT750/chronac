@@ -23,7 +23,7 @@ public final class TimetableDemoData {
         nelmaSchedule.addInvalidDayOfWeek(DayOfWeek.THURSDAY);
 
         TeacherSchedule rodolfoSchedule = new TeacherSchedule("Rodolfo");
-        rodolfoSchedule.addInvalidDayOfWeek(DayOfWeek.WEDNESDAY);
+        rodolfoSchedule.addInvalidDayOfWeek(DayOfWeek.FRIDAY);
 
         TeacherSchedule vanessaSchedule = new TeacherSchedule("Vanessa");
         vanessaSchedule.addUnavailableDateRange(LocalDate.of(2026, 9, 21), LocalDate.of(2026, 9, 30));
