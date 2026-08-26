@@ -52,6 +52,10 @@ public class Timeslot {
         return (long) date.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR);
     }
 
+    public LocalDate getWeekStart() {
+        return date.minusDays(date.getDayOfWeek().getValue() - 1L);
+    }
+
     public LocalTime getStartTime() {
         return startTime;
     }

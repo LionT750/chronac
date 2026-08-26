@@ -79,4 +79,14 @@ public class Subject {
     public void setEffectiveDayOfWeeks(List<DayOfWeek> effectiveDayOfWeeks) {
         this.effectiveDayOfWeeks = effectiveDayOfWeeks == null ? new ArrayList<>() : new ArrayList<>(effectiveDayOfWeeks);
     }
+
+    public boolean canHaveClassOn(LocalDate date) {
+        if (startDate != null && date.isBefore(startDate)) {
+            return false;
+        }
+        if (endDate != null && date.isAfter(endDate)) {
+            return false;
+        }
+        return effectiveDayOfWeeks.contains(date.getDayOfWeek());
+    }
 }
