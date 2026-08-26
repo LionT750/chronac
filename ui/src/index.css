@@ -110,6 +110,15 @@
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+    --sidebar: oklch(29.882% 0.05511 274.034);
+    --sidebar-foreground: oklch(0.89 0 0);
+    --sidebar-primary: oklch(0.55 0.2 270);
+    --sidebar-primary-foreground: oklch(0.98 0 0);
+    --sidebar-accent: oklch(0.70 0.15 280);
+    --sidebar-accent-foreground: oklch(0.15 0 0);
+    --sidebar-border: oklch(0.25 0 0);
+    --sidebar-ring: oklch(0.55 0.15 280);
   }
 
   #social .button-icon {

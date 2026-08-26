@@ -1,11 +1,48 @@
+// ============================================
+// SIDEBAR COMPONENT - Componente de navegação lateral
+// ============================================
+// Gerencia layout responsivo, estado de aberto/fechado, e transições suaves
+//
+// PRINCIPAIS RECURSOS:
+// • Responsivo: Sidebar normal em desktop, modal em mobile
+// • Estado persistente: Lembra se o sidebar estava aberto (cookie)
+// • Colapsável: Modo ícones (3rem) quando fechado
+// • Atalho de teclado: Ctrl+B ou Cmd+B para alternar
+// • Tooltips automáticos: Mostra nomes quando em modo ícones
+// • Variantes: sidebar padrão, floating (flutuante), inset (com margens)
+//
+// ESTRUTURA TÍPICA:
+// <SidebarProvider>
+//   <Sidebar>
+//     <SidebarHeader>Logo/Título</SidebarHeader>
+//     <SidebarContent>
+//       <SidebarGroup>
+//         <SidebarGroupLabel>SEÇÃO</SidebarGroupLabel>
+//         <SidebarGroupContent>
+//           <SidebarMenu>
+//             <SidebarMenuItem>
+//               <SidebarMenuButton>Item</SidebarMenuButton>
+//             </SidebarMenuItem>
+//           </SidebarMenu>
+//         </SidebarGroupContent>
+//       </SidebarGroup>
+//     </SidebarContent>
+//     <SidebarFooter>Perfil</SidebarFooter>
+//   </Sidebar>
+//   <SidebarInset>
+//     <SidebarTrigger /> {/* Botão hambúrguer */}
+//     {/* Conteúdo principal */}
+//   </SidebarInset>
+// </SidebarProvider>
+
 "use client";
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { cva } from "class-variance-authority";
+import { cva } from "class-variance-authority"; // Usado para criar variantes de classes
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile" // Hook para detectar dispositivos móveis
+import { cn } from "@/lib/utils" // Função para combinar nomes de classes
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -15,23 +52,60 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/sheet" // Componente de painel deslizante (mobile)
+import { Skeleton } from "@/components/ui/skeleton" // Placeholder de carregamento
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { PanelLeftIcon } from "lucide-react"
+import { PanelLeftIcon } from "lucide-react" // Ícone de menu hambúrguer
 
+// ============================================
+// CONSTANTES DE CONFIGURAÇÃO
+// ============================================
+// ⚠️ AJUSTE ESTES VALORES PARA PERSONALIZAR MANUALMENTE O SIDEBAR
+
+// Nome do cookie que armazena se o sidebar está aberto ou fechado
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
+
+// Tempo de vida do cookie (7 dias em segundos)
+// Alterar para persistir a preferência por mais/menos tempo
+// Exemplo: 60 * 60 * 24 * 30 para 30 dias
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+
+// 🎨 LARGURA - quando o sidebar está EXPANDIDO
+// Padrão: "16rem" (256px) 
+// Alterar para: "18rem" (288px), "20rem" (320px), "14rem" (224px), etc
 const SIDEBAR_WIDTH = "16rem"
+
+// 📱 LARGURA - em DISPOSITIVOS MÓVEIS
+// Padrão: "18rem" (288px) - mais largo que desktop
+// Alterar para a mesma que SIDEBAR_WIDTH ou maior se quiser
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+
+// 🔲 LARGURA - quando o sidebar está COLAPSADO (modo ícones)
+// Padrão: "3rem" (48px) - espaço para ícone + padding
+// Não recomendado alterar a menos que use ícones maiores (ex: "4rem" para ícones 32px)
+const SIDEBAR_WIDTH_ICON = "3.5rem"
+
+// ⌨️ ATALHO DE TECLADO - alternar sidebar
+// Padrão: "b" = Ctrl+B (Windows/Linux) ou Cmd+B (Mac)
+// Alterar para qualquer letra: "n", "m", "s", etc
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+// ============================================
+// CONTEXT E HOOKS
+// ============================================
+
+// Context para compartilhar estado do sidebar entre componentes
 const SidebarContext = React.createContext(null)
+
+// ============================================
+// HOOK: useSidebar()
+// ============================================
+// Acesso ao contexto do sidebar de qualquer componente filho
+// Retorna: { state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar }
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -42,6 +116,16 @@ function useSidebar() {
   return context
 }
 
+// ============================================
+// COMPONENTE: SidebarProvider
+// ============================================
+// Provedor raiz do sidebar
+// Props:
+//   - defaultOpen: Se o sidebar inicia aberto (padrão: true)
+//   - open/onOpenChange: Props para controlar de fora
+//   - className/style: Personalizações
+// Gerencia: Estado aberto/fechado, Cookies, Atalhos de teclado
+
 function SidebarProvider({
   defaultOpen = true,
   open: openProp,
@@ -51,13 +135,15 @@ function SidebarProvider({
   children,
   ...props
 }) {
-  const isMobile = useIsMobile()
-  const [openMobile, setOpenMobile] = React.useState(false)
+  const isMobile = useIsMobile() // Detecta se é dispositivo móvel
+  const [openMobile, setOpenMobile] = React.useState(false) // Estado separado para mobile (abre como modal)
 
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
+  // Estado interno do sidebar (pode ser controlado de fora via openProp)
   const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
+  const open = openProp ?? _open // Usa prop externa ou estado interno
+  
+  // Função para definir o estado de abertura
+  // Salva em cookie para lembrar a preferência do usuário
   const setOpen = React.useCallback((value) => {
     const openState = typeof value === "function" ? value(open) : value
     if (setOpenProp) {
@@ -66,16 +152,16 @@ function SidebarProvider({
       _setOpen(openState)
     }
 
-    // This sets the cookie to keep the sidebar state.
+    // Salva no cookie para persistir o estado mesmo após reload
     document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
   }, [setOpenProp, open])
 
-  // Helper to toggle the sidebar.
+  // Função auxiliar para alternar entre aberto e fechado
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
   }, [isMobile, setOpen, setOpenMobile])
 
-  // Adds a keyboard shortcut to toggle the sidebar.
+  // Atalho de teclado: Ctrl/Cmd + B para alternar sidebar
   React.useEffect(() => {
     const handleKeyDown = (event) => {
       if (
@@ -91,10 +177,11 @@ function SidebarProvider({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleSidebar])
 
-  // We add a state so that we can do data-state="expanded" or "collapsed".
-  // This makes it easier to style the sidebar with Tailwind classes.
+  // Estado: "expanded" (aberto) ou "collapsed" (fechado)
+  // Usado para aplicar classes CSS diferentes
   const state = open ? "expanded" : "collapsed"
 
+  // Valor do contexto que será passado para todos os componentes filhos
   const contextValue = React.useMemo(() => ({
     state,
     open,
@@ -107,12 +194,13 @@ function SidebarProvider({
 
   return (
     <SidebarContext.Provider value={contextValue}>
+      {/* Container wrapper que define as variáveis CSS de largura */}
       <div
         data-slot="sidebar-wrapper"
         style={
           {
-            "--sidebar-width": SIDEBAR_WIDTH,
-            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+            "--sidebar-width": SIDEBAR_WIDTH, // Largura quando expandido
+            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON, // Largura quando colapsado
             ...style
           }
         }
@@ -127,6 +215,16 @@ function SidebarProvider({
   );
 }
 
+// ============================================
+// COMPONENTE: Sidebar
+// ============================================
+// Componente principal que renderiza o sidebar
+// Props:
+//   - side: "left" ou "right" - posição do sidebar
+//   - variant: "sidebar", "floating", ou "inset" - estilo visual
+//   - collapsible: "offcanvas" ou "icon" - comportamento ao fechar
+//   - className: Classes customizadas
+
 function Sidebar({
   side = "left",
   variant = "sidebar",
@@ -138,6 +236,7 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
+  // Em dispositivos móveis com collapsible="none": renderiza sidebar fixo normal
   if (collapsible === "none") {
     return (
       <div
@@ -152,6 +251,8 @@ function Sidebar({
     );
   }
 
+  // Em DISPOSITIVOS MÓVEIS: Renderiza como modal deslizante (Sheet)
+  // O sidebar sai do fluxo normal e aparece como um painel flutuante
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
@@ -163,7 +264,7 @@ function Sidebar({
           className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE
+              "--sidebar-width": SIDEBAR_WIDTH_MOBILE // Usa largura maior no mobile
             }
           }
           side={side}>
@@ -177,37 +278,57 @@ function Sidebar({
     );
   }
 
+  // Em DESKTOP: Renderiza sidebar em coluna lateral com suporte a colapsamento
   return (
     <div
-      className="group peer hidden text-sidebar-foreground md:block"
-      data-state={state}
-      data-collapsible={state === "collapsed" ? collapsible : ""}
-      data-variant={variant}
+      className="group peer hidden text-sidebar-foreground md:block" // Escondido em mobile, visível em md+
+      data-state={state} // "expanded" ou "collapsed"
+      data-collapsible={state === "collapsed" ? collapsible : ""} // Tipo de colapso
+      data-variant={variant} // Estilo visual
       data-side={side}
       data-slot="sidebar">
-      {/* This is what handles the sidebar gap on desktop */}
+      
+      {/* 
+        ============================================
+        SIDEBAR-GAP: Espaço reservado para o sidebar
+        ============================================
+        Mantém espaço no layout mesmo quando sidebar sai de tela
+        - Com collapsible="offcanvas": largura = 0 (não ocupa espaço)
+        - Com collapsible="icon": largura = SIDEBAR_WIDTH_ICON (pequeno espaço)
+      */}
       <div
         data-slot="sidebar-gap"
         className={cn(
           "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-          "group-data-[collapsible=offcanvas]:w-0",
+          "group-data-[collapsible=offcanvas]:w-0", // Sem espaço se offcanvas
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
             ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)" // Espaço pequeno se icon
         )} />
+      
+      {/* 
+        ============================================
+        SIDEBAR-CONTAINER: Contêiner fixo do sidebar
+        ============================================
+        Posicionado fixed (não sai da tela ao fazer scroll)
+        - Muda left/right dependendo de data-side
+        - Move para fora da tela com collapsible=offcanvas
+        - Transiciona suavemente com duration-200
+      */}
       <div
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
           "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
-          // Adjust the padding for floating and inset variants.
+          // Variações visuais para "floating" e "inset"
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         )}
         {...props}>
+        {/* Elemento interno com estilo */}
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
@@ -218,6 +339,12 @@ function Sidebar({
     </div>
   );
 }
+
+// ============================================
+// COMPONENTE: SidebarTrigger
+// ============================================
+// Botão para abrir/fechar o sidebar
+// Tipicamente colocado em SidebarInset
 
 function SidebarTrigger({
   className,
@@ -238,11 +365,17 @@ function SidebarTrigger({
         toggleSidebar()
       }}
       {...props}>
-      <PanelLeftIcon />
+      <PanelLeftIcon /> {/* Ícone de menu hambúrguer */}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
 }
+
+// ============================================
+// COMPONENTE: SidebarRail
+// ============================================
+// Trilha invisível na borda do sidebar para arrastar e redimensionar
+// Aparece como um fino divisor quando hover
 
 function SidebarRail({
   className,
@@ -271,6 +404,12 @@ function SidebarRail({
   );
 }
 
+// ============================================
+// COMPONENTE: SidebarInset
+// ============================================
+// Área principal de conteúdo (à direita/esquerda do sidebar)
+// Ocupa o espaço restante e adapta-se ao tamanho do sidebar
+
 function SidebarInset({
   className,
   ...props
@@ -286,6 +425,11 @@ function SidebarInset({
   );
 }
 
+// ============================================
+// COMPONENTES DE ESTRUTURA
+// ============================================
+
+// Input para busca dentro do sidebar
 function SidebarInput({
   className,
   ...props
@@ -299,6 +443,7 @@ function SidebarInput({
   );
 }
 
+// Cabeçalho do sidebar (logo, título, etc)
 function SidebarHeader({
   className,
   ...props
@@ -312,6 +457,7 @@ function SidebarHeader({
   );
 }
 
+// Rodapé do sidebar (perfil do usuário, etc)
 function SidebarFooter({
   className,
   ...props
@@ -325,6 +471,7 @@ function SidebarFooter({
   );
 }
 
+// Divisor visual entre seções
 function SidebarSeparator({
   className,
   ...props
@@ -338,6 +485,8 @@ function SidebarSeparator({
   );
 }
 
+// Área central com scroll para o conteúdo do menu
+// group-data-[collapsible=icon]:overflow-hidden = oculta scroll quando colapsado
 function SidebarContent({
   className,
   ...props
@@ -354,6 +503,11 @@ function SidebarContent({
   );
 }
 
+// ============================================
+// COMPONENTES DE GRUPO (SidebarGroup*)
+// ============================================
+// Grupo = seção de links/botões no sidebar
+
 function SidebarGroup({
   className,
   ...props
@@ -367,6 +521,9 @@ function SidebarGroup({
   );
 }
 
+// Rótulo do grupo (ex: "NAVEGAÇÃO", "CONFIGURAÇÕES")
+// group-data-[collapsible=icon]:-mt-8 = Move para cima quando colapsado
+// group-data-[collapsible=icon]:opacity-0 = Oculta o texto quando colapsado
 function SidebarGroupLabel({
   className,
   render,
@@ -388,6 +545,8 @@ function SidebarGroupLabel({
   });
 }
 
+// Ação do grupo (botão no canto: add, settings, etc)
+// group-data-[collapsible=icon]:hidden = Esconde quando colapsado
 function SidebarGroupAction({
   className,
   render,
@@ -409,6 +568,7 @@ function SidebarGroupAction({
   });
 }
 
+// Container para o conteúdo do grupo (menu items, links, etc)
 function SidebarGroupContent({
   className,
   ...props
@@ -561,7 +721,7 @@ function SidebarMenuSkeleton({
   showIcon = false,
   ...props
 }) {
-  // Random width between 50 to 90%.
+  // Random width entre 50-90% para parecer mais natural
   const [width] = React.useState(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`;
   })
@@ -587,6 +747,12 @@ function SidebarMenuSkeleton({
   );
 }
 
+// ============================================
+// SUBMENU DO MENU
+// ============================================
+// Menu aninhado (ex: Página > Criar Página, Editar Página)
+// group-data-[collapsible=icon]:hidden = Esconde TUDO quando colapsado
+
 function SidebarMenuSub({
   className,
   ...props
@@ -603,6 +769,7 @@ function SidebarMenuSub({
   );
 }
 
+// Item do submenu
 function SidebarMenuSubItem({
   className,
   ...props
@@ -616,6 +783,8 @@ function SidebarMenuSubItem({
   );
 }
 
+// Botão do submenu
+// group-data-[collapsible=icon]:hidden = Esconde quando colapsado
 function SidebarMenuSubButton({
   render,
   size = "md",
@@ -640,6 +809,41 @@ function SidebarMenuSubButton({
     },
   });
 }
+
+// ============================================
+// EXPORTAÇÕES - COMPONENTES DISPONÍVEIS
+// ============================================
+// Este arquivo exporta um sistema completo de sidebar componentizado
+// Cada componente pode ser usado independentemente e composto junto com outros
+
+// RESUMO DOS COMPONENTES:
+// ├─ SidebarProvider: Provedor raiz do sistema (context)
+// ├─ Sidebar: Container principal do sidebar
+// ├─ SidebarTrigger: Botão para abrir/fechar
+// ├─ SidebarRail: Trilha na borda para redimensionar
+// ├─ SidebarInset: Area de conteúdo principal (ao lado do sidebar)
+// ├─ Estrutura:
+// │  ├─ SidebarHeader: Cabeçalho (logo, título)
+// │  ├─ SidebarContent: Area com scroll (menu)
+// │  ├─ SidebarFooter: Rodapé (perfil, settings)
+// │  ├─ SidebarInput: Input de busca
+// │  └─ SidebarSeparator: Divisor visual
+// ├─ Grupos:
+// │  ├─ SidebarGroup: Container de seção
+// │  ├─ SidebarGroupLabel: Rótulo da seção
+// │  ├─ SidebarGroupContent: Conteúdo
+// │  └─ SidebarGroupAction: Botão de ação
+// ├─ Menu:
+// │  ├─ SidebarMenu: Lista <ul>
+// │  ├─ SidebarMenuItem: Item <li>
+// │  ├─ SidebarMenuButton: Botão/link
+// │  ├─ SidebarMenuAction: Botão extra
+// │  ├─ SidebarMenuBadge: Notificação/badge
+// │  ├─ SidebarMenuSkeleton: Placeholder de carregamento
+// │  ├─ SidebarMenuSub: Submenu
+// │  ├─ SidebarMenuSubItem: Item do submenu
+// │  └─ SidebarMenuSubButton: Botão do submenu
+// └─ useSidebar: Hook para acessar contexto
 
 export {
   Sidebar,

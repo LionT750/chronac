@@ -3,7 +3,8 @@
     width: 100%;
     text-align: left;
     box-sizing: border-box;
-    background-color: var(--bg);
+    background-color:  oklch(29.882% 0.05511 274.034);
+    border-radius: 0.5%;
 }
 
 .Calendar button {

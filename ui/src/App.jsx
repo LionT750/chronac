@@ -51,9 +51,6 @@ const CINZA = { border: 'border-slate-500', bg: 'bg-slate-500/10', text: 'text-s
 
 const sidebarItems = [
   { title: 'Visão geral', icon: LayoutGrid, active: true },
-  { title: 'Calendário', icon: CalendarDays, active: false },
-  { title: 'Filtros', icon: Filter, active: false },
-  { title: 'Materias', icon: BookOpenText, active: false },
 ]
 
 function corPorMateria(nome) {
@@ -63,6 +60,15 @@ function corPorMateria(nome) {
 
   const numero = parseInt(match[1], 10)
   return numero <= 6 ? AZUL : VERDE
+}
+
+function cursoPorMateria(nome) {
+  if (!nome) return ''
+  const match = nome.match(/UC\s*(\d+)/i)
+  if (!match) return ''
+
+  const numero = parseInt(match[1], 10)
+  return numero <= 6 ? 'azul' : 'verde'
 }
 
 function prioridadePorCor(corObj) {
@@ -102,8 +108,9 @@ function App() {
   const [teacherFilter, setTeacherFilter] = useState('')
   const [subjectFilter, setSubjectFilter] = useState('')
   const [dayFilter, setDayFilter] = useState('')
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1))
-
+  const [courseFilter, setCourseFilter] = useState('')
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1))  
+  const [viewType, setViewType] = useState('month') // 'month', 'week', 'day'
   const fetchTimetable = () => {
     setLoading(true)
     setError(null)
@@ -167,7 +174,8 @@ function App() {
     const matchesTeacher = !teacherFilter || l.teacher === teacherFilter
     const matchesSubject = !subjectFilter || l.subject === subjectFilter
     const matchesDay = !dayFilter || l.dayOfWeek === dayFilter
-    return matchesTeacher && matchesSubject && matchesDay
+    const matchesCourse = !courseFilter || cursoPorMateria(l.subject) === courseFilter
+    return matchesTeacher && matchesSubject && matchesDay && matchesCourse
   })
 
   const lessonsByDate = useMemo(() => {
@@ -182,11 +190,22 @@ function App() {
   }, [lessons])
 
   const diasDoGrid = useMemo(() => {
+    if (viewType === 'week') {
+      // Visão semanal: mostra 7 dias da semana
+      const weekStart = startOfWeek(currentMonth, { weekStartsOn: 0 })
+      const weekEnd = endOfWeek(currentMonth, { weekStartsOn: 0 })
+      return eachDayOfInterval({ start: weekStart, end: weekEnd })
+    }
+    if (viewType === 'day') {
+      // Visão diária: mostra só o dia selecionado
+      return [currentMonth]
+    }
+    // Visão mensal: mostra todo o mês
     const monthStart = startOfMonth(currentMonth)
     const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 })
     const gridEnd = addDays(gridStart, 41)
     return eachDayOfInterval({ start: gridStart, end: gridEnd })
-  }, [currentMonth])
+  }, [currentMonth, viewType])
 
   const diasDaSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
 
@@ -194,10 +213,28 @@ function App() {
     setTeacherFilter('')
     setSubjectFilter('')
     setDayFilter('')
+    setCourseFilter('')
   }
 
-  const proximoMes = () => setCurrentMonth(addMonths(currentMonth, 1))
+  const diaAnterior = () => setCurrentMonth(addDays(currentMonth, -1))
+  const proximoDia = () => setCurrentMonth(addDays(currentMonth, 1))
+  const semanaAnterior = () => setCurrentMonth(addDays(currentMonth, -7))
+  const proximaSemana = () => setCurrentMonth(addDays(currentMonth, 7))
   const mesAnterior = () => setCurrentMonth(subMonths(currentMonth, 1))
+  const proximoMes = () => setCurrentMonth(addMonths(currentMonth, 1))
+
+  const navegarPeriodoAnterior = () => {
+    if (viewType === 'month') mesAnterior()
+    else if (viewType === 'week') semanaAnterior()
+    else diaAnterior()
+  }
+
+  const navegarProximoPeriodo = () => {
+    if (viewType === 'month') proximoMes()
+    else if (viewType === 'week') proximaSemana()
+    else proximoDia()
+  }
+
   const irParaHoje = () => setCurrentMonth(new Date())
 
   if (!isAuthenticated) {
@@ -212,20 +249,23 @@ function App() {
           className="border-r border-slate-800 bg-[#101827] text-slate-200 shadow-2xl shadow-slate-950/40"
         >
           <SidebarHeader className="border-b border-slate-800 px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
-            {/* Aqui: ajuste de design do sidebar fechado (modo ícone) */}
-            <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-sm font-bold text-blue-300 ring-1 ring-blue-500/30">
-                C
-              </div>
-              <div className="grid min-w-0 flex-1 text-left group-data-[collapsible=icon]:hidden">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Chronac</span>
-              </div>
+            {/* Logo Chronac */}
+            <div className="flex items-center justify-center gap-3 group-data-[collapsible=icon]:justify-center">
+              <img 
+                src="/logo.png" 
+                alt="Chronac Logo"
+                className="h-16 object-contain group-data-[collapsible=icon]:hidden"
+              />
+              <img 
+                src="/logo_p.png" 
+                alt="Chronac Compact Logo"
+                className="hidden h-10 w-10 object-contain group-data-[collapsible=icon]:block"
+              />
             </div>
           </SidebarHeader>
 
           <SidebarContent className="px-2 py-3 group-data-[collapsible=icon]:px-1">
             <SidebarGroup>
-              <SidebarGroupLabel className="px-2 text-slate-400 group-data-[collapsible=icon]:hidden">Navegação</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {sidebarItems.map(({ title, icon: Icon, active }) => (
@@ -272,7 +312,7 @@ function App() {
             </div>
 
             <div className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              Online
+              Versão beta
             </div>
           </div>
 
@@ -317,6 +357,16 @@ function App() {
                             <option key={d} value={d}>{d}</option>
                           ))}
                         </select>
+
+                        <select
+                          value={courseFilter}
+                          onChange={(e) => setCourseFilter(e.target.value)}
+                          className="min-w-[220px] flex-1 rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-blue-500"
+                        >
+                          <option value="">Todos os cursos</option>
+                          <option value="azul">Jovem Programador</option>
+                          <option value="verde">Técnico em Desenvolvimento de Sistemas</option>
+                        </select>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -346,7 +396,7 @@ function App() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={mesAnterior}
+                          onClick={navegarPeriodoAnterior}
                           className="h-8 w-8 border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -354,7 +404,7 @@ function App() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={proximoMes}
+                          onClick={navegarProximoPeriodo}
                           className="h-8 w-8 border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -367,34 +417,46 @@ function App() {
                           Hoje
                         </Button>
                         <h2 className="ml-2 text-xl font-bold capitalize text-white">
-                          {format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+                          {viewType === 'month' && format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+                          {viewType === 'week' && `Semana de ${format(startOfWeek(currentMonth, { weekStartsOn: 0 }), 'd MMMM', { locale: ptBR })}`}
+                          {viewType === 'day' && format(currentMonth, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </h2>
                       </div>
 
                       <div className="flex gap-1 rounded-lg bg-slate-900 p-0.5 text-xs font-medium text-slate-400">
-                        <button className="rounded-md bg-slate-800 px-3 py-1.5 font-semibold text-white shadow-sm">
+                        <button 
+                          onClick={() => setViewType('month')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'month' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                        >
                           Mês
                         </button>
-                        <button className="rounded-md px-3 py-1.5 transition-colors hover:text-white" disabled>
+                        <button 
+                          onClick={() => setViewType('week')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'week' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                        >
                           Semana
                         </button>
-                        <button className="rounded-md px-3 py-1.5 transition-colors hover:text-white" disabled>
+                        <button 
+                          onClick={() => setViewType('day')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'day' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                        >
                           Dia
                         </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-7 border-b border-slate-800 bg-[#141724] text-left text-xs font-bold tracking-wider text-slate-400">
-                      {diasDaSemana.map((d) => (
-                        <div key={d} className="border-r border-slate-800/50 p-3 last:border-r-0">
-                          {d}
-                        </div>
-                      ))}
-                    </div>
+                    {viewType !== 'day' && (
+                      <div className="grid grid-cols-7 border-b border-slate-800 bg-[#141724] text-left text-xs font-bold tracking-wider text-slate-400">
+                        {diasDaSemana.map((d) => (
+                          <div key={d} className="border-r border-slate-800/50 p-3 last:border-r-0">
+                            {d}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <div
-                      className="grid grid-cols-7 gap-[1px] bg-slate-950"
-                      style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}
+                      className={`grid gap-[1px] bg-slate-950 ${viewType === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}
                     >
                       {diasDoGrid.map((dia, idx) => {
                         const dataChave = format(dia, 'yyyy-MM-dd')
