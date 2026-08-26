@@ -20,12 +20,10 @@
 }
 
 .Calendar button:hover {
-.Calendar button:hover {
   transform: scale(1.03);
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.Calendar button:active {
 .Calendar button:active {
   transform: scale(0.97);
 }
@@ -81,7 +79,6 @@ select {
   color: var(--text-h);
 }
 
-.Calendar button:disabled {
 .Calendar button:disabled {
   opacity: 0.6;
   cursor: default;
@@ -169,7 +166,3 @@ header {
   align-items: center;
   gap: 16px;
 }
-
-
-
-
