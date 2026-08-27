@@ -470,7 +470,7 @@ function App() {
                             className="h-[140px] min-h-0 min-w-0 cursor-pointer border border-slate-900/40 bg-[#0f111a] p-2 transition-colors hover:bg-[#151926]"
                             onClick={() => alert(`Ação para adicionar/gerenciar o dia: ${format(dia, 'dd/MM/yyyy')}`)}
                           >
-                            <div className="mb-1 flex items-center justify-between">
+                            <div className="flex items-center justify-between">
                               <span
                                 className={`text-xs font-bold ${
                                   ehHoje
@@ -484,26 +484,37 @@ function App() {
                               </span>
                             </div>
 
-                            <div className="flex min-w-0 flex-1 flex-col gap-0.5 overflow-hidden">
+                            <div className="mt-1 flex min-w-0 flex-1 flex-col gap-1 overflow-hidden justify-evenly">
                               {aulasDoDia.slice(0, 3).map((aula, lIdx) => {
                                 const cor = corPorMateria(aula.subject)
                                 return (
                                   <div
                                     key={aula.id ?? lIdx}
-                                    className={`flex min-w-0 items-center gap-2 rounded-sm border-l-2 px-1.5 py-2.5 text-[10px] leading-tight shadow-sm transition-colors hover:opacity-80 ${cor.border} ${cor.bg} ${cor.text}`}
+                                    className={`w-full py-2 min-w-0 overflow-hidden rounded-md border-l-2 px-2 py-1 shadow-sm transition-colors hover:opacity-80 ${cor.border} ${cor.bg} ${cor.text}`}
                                     title={`${aula.time} · ${aula.subject} · ${aula.room} · ${aula.teacher}`}
                                   >
-                                    <span className="shrink-0 font-bold text-slate-400">{aula.time?.split(' - ')[0] ?? '-'}</span>
-                                    <span className="min-w-0 truncate font-semibold text-slate-100">{aula.subject ?? 'Sem matéria'}</span>
-                                    <span className="shrink-0 text-slate-500">{aula.room ?? '-'}</span>
-                                    <span className="shrink-0 text-slate-500">{aula.teacher ?? '-'}</span>
+                                    <div className="flex gap-11.5 min-w-0">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="shrink-0 text-[11px] font-bold leading-tight">
+                                          {aula.time?.split(' - ')[0] ?? '-'}
+                                        </span>
+                                        <span className="min-w-0 truncate text-[12px] font-semibold leading-tight">
+                                          {aula.subject ?? "Sem matéria"}
+                                        </span>
+                                      </div>
+                                      <div className="min-w-0 truncate text-[10px] text-slate-300 leading-tight">
+                                        {aula.teacher}
+                                        {aula.teacher && aula.room ? " · " : ""}
+                                        {aula.room}
+                                      </div>
+                                    </div>
                                   </div>
                                 )
                               })}
                             </div>
 
                             {aulasDoDia.length > 3 && (
-                              <div className="mt-1 pl-1 text-[10px] font-bold text-blue-400">
+                              <div className="mt-1 pl-2 text-[10px] font-bold text-blue-400">
                                 + {aulasDoDia.length - 3} aulas
                               </div>
                             )}
