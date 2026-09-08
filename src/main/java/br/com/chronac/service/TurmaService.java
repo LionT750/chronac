@@ -35,6 +35,8 @@ public class TurmaService {
 
     public Turma create(TurmaRequest request) {
         Turma turma = new Turma(request.name(), request.turno(), request.capacity());
+        turma.setRoomName(request.roomName());
+        turma.setValidWeekdays(request.validWeekdays());
         turma.setTeachers(resolveTeachers(request.teacherIds()));
         return turmaRepository.save(turma);
     }
@@ -44,6 +46,8 @@ public class TurmaService {
         turma.setName(request.name());
         turma.setTurno(request.turno());
         turma.setCapacity(request.capacity());
+        turma.setRoomName(request.roomName());
+        turma.setValidWeekdays(request.validWeekdays());
         turma.setTeachers(resolveTeachers(request.teacherIds()));
         return turmaRepository.save(turma);
     }
