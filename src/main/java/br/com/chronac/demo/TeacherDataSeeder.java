@@ -4,6 +4,7 @@ import br.com.chronac.domain.Teacher;
 import br.com.chronac.repository.TeacherRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
@@ -16,9 +17,11 @@ import java.util.Set;
  * Teacher table backs the exact same "MultiTurma Demo" schedule restrictions
  * that {@link TimetableDemoData} used to build inline. Runs as an
  * ApplicationRunner so it completes before TimetableDemoSolver's
- * ApplicationReadyEvent listener solves the demo problem.
+ * ApplicationReadyEvent listener solves the demo problem. Ordered before
+ * {@link TurmaDataSeeder}, which links turmas to these teachers.
  */
 @Component
+@Order(1)
 public class TeacherDataSeeder implements ApplicationRunner {
 
     private final TeacherRepository teacherRepository;

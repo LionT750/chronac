@@ -78,6 +78,22 @@ public class Curriculum {
                 .toList();
     }
 
+    public void applyTurmaWeekdays(List<Turma> turmas) {
+        if (turmas == null || turmas.isEmpty()) {
+            return;
+        }
+        for (Subject subject : subjects.values()) {
+            for (Turma turma : turmas) {
+                if (subject.getDesignedRooms().contains(turma.getRoomName())) {
+                    List<DayOfWeek> weekdays = List.copyOf(turma.getValidWeekdays());
+                    subject.setDesignDayOfWeeks(weekdays);
+                    subject.setEffectiveDayOfWeeks(weekdays);
+                    break;
+                }
+            }
+        }
+    }
+
     public void applyTeacherSchedules() {
         for (Subject subject : subjects.values()) {
             TeacherSchedule schedule = teacherSchedules.get(subject.getTeacher());

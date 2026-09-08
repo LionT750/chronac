@@ -80,6 +80,7 @@ public class Timetable {
         private List<Subject> subjects;
         private List<Week> weeks;
         private List<TeacherSchedule> teacherSchedules = List.of();
+        private List<Turma> turmas = List.of();
 
         public Builder(LocalDate semesterStartDate, LocalDate semesterEndDate) {
             this.semester = new Semester(
@@ -101,6 +102,11 @@ public class Timetable {
 
         public Builder withTeacherSchedules(List<TeacherSchedule> teacherSchedules) {
             this.teacherSchedules = new ArrayList<>(teacherSchedules);
+            return this;
+        }
+
+        public Builder withTurmas(List<Turma> turmas) {
+            this.turmas = new ArrayList<>(turmas);
             return this;
         }
 
@@ -217,6 +223,9 @@ public class Timetable {
         public Timetable build() {
             Objects.requireNonNull(name, "Name must be provided.");
             Objects.requireNonNull(rooms, "Rooms must be provided.");
+
+            // Each subject's valid weekdays come from the turma designed for its room.
+            semester.getCurriculum().applyTurmaWeekdays(turmas);
 
             // Register teacher schedules with curriculum
             for (TeacherSchedule schedule : teacherSchedules) {

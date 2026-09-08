@@ -4,22 +4,25 @@ import br.com.chronac.domain.Room;
 import br.com.chronac.domain.TeacherSchedule;
 import br.com.chronac.domain.Timetable;
 import br.com.chronac.domain.Teacher;
+import br.com.chronac.domain.Turma;
 
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Builds the exact same "MultiTurma Demo" problem that the legacy main() solved
- * and exposed via the raw HttpServer. Teacher schedule restrictions now come
- * from the persisted {@link Teacher} rows (seeded by {@link TeacherDataSeeder})
- * instead of being built inline.
+ * and exposed via the raw HttpServer. Teacher schedule restrictions come from
+ * the persisted {@link Teacher} rows, and each subject's valid weekdays come
+ * from the persisted {@link Turma} designed for its room, instead of being
+ * built inline. Both are seeded by {@link TeacherDataSeeder} and
+ * {@link TurmaDataSeeder}.
  */
 public final class TimetableDemoData {
 
     private TimetableDemoData() {
     }
 
-    public static Timetable buildDemoProblem(List<Teacher> teachers) {
+    public static Timetable buildDemoProblem(List<Teacher> teachers, List<Turma> turmas) {
         List<TeacherSchedule> teacherSchedules = teachers.stream()
                 .map(TimetableDemoData::toTeacherSchedule)
                 .toList();
@@ -30,6 +33,7 @@ public final class TimetableDemoData {
                         new Room(Long.toString(1L), "Sala 114"),
                         new Room(Long.toString(2L), "Sala 115")))
                 .withTeacherSchedules(teacherSchedules)
+                .withTurmas(turmas)
                 .build();
     }
 

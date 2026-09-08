@@ -7,6 +7,7 @@ import br.com.chronac.domain.Lesson;
 import br.com.chronac.domain.Timeslot;
 import br.com.chronac.domain.Timetable;
 import br.com.chronac.repository.TeacherRepository;
+import br.com.chronac.repository.TurmaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -35,19 +36,22 @@ public class TimetableDemoSolver {
 
     private final SolverManager<Timetable> solverManager;
     private final TeacherRepository teacherRepository;
+    private final TurmaRepository turmaRepository;
     private final Object lock = new Object();
     private Timetable problem;
     private Timetable bestSolution;
 
-    public TimetableDemoSolver(SolverManager<Timetable> solverManager, TeacherRepository teacherRepository) {
+    public TimetableDemoSolver(SolverManager<Timetable> solverManager, TeacherRepository teacherRepository,
+            TurmaRepository turmaRepository) {
         this.solverManager = solverManager;
         this.teacherRepository = teacherRepository;
+        this.turmaRepository = turmaRepository;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void solveDemoOnStartup() {
         synchronized (lock) {
-            problem = TimetableDemoData.buildDemoProblem(teacherRepository.findAll());
+            problem = TimetableDemoData.buildDemoProblem(teacherRepository.findAll(), turmaRepository.findAll());
         }
 
         SolverJob<Timetable> solverJob = solverManager.solveAndListen(DEMO_PROBLEM_ID, problem,
@@ -81,7 +85,7 @@ public class TimetableDemoSolver {
                 return bestSolution;
             }
             if (problem == null) {
-                problem = TimetableDemoData.buildDemoProblem(teacherRepository.findAll());
+                problem = TimetableDemoData.buildDemoProblem(teacherRepository.findAll(), turmaRepository.findAll());
             }
             return problem;
         }
