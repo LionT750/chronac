@@ -1,10 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo_p.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chronac</title>
+    <script>
+      // Apply the saved preference before the first paint.
+      try {
+        const theme = localStorage.getItem('chronac-theme') === 'dark' ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.style.colorScheme = theme;
+      } catch { /* The default light theme also works without storage. */ }
+    </script>
   </head>
   <body>
     <div id="root"></div>

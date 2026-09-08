@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 // Importa os estilos da tela de login
 import './Login.css'
+import { ThemeToggle } from './components/ThemeToggle'
 
 function Login() {
   // Guarda o e-mail digitado
@@ -22,6 +23,7 @@ function Login() {
     <div className="login">
       {/* Caixa do formulário */}
       <div className="login-container">
+        <div className="login-theme"><ThemeToggle /></div>
         <h1>CHRONAC</h1>
         <p>Acesse sua conta</p>
 

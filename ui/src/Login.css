@@ -4,29 +4,29 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: var(--background);
 }
 
 /* Caixa principal do login */
 .login-container {
   width: 350px;
   padding: 30px;
-  background-color: white;
+  background-color: var(--card);
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow);
 }
 
 /* Título */
 .login-container h1 {
   text-align: center;
-  color: #1f5f99;
+  color: var(--primary);
 }
 
 /* Texto abaixo do título */
 .login-container p {
   text-align: center;
   margin-bottom: 20px;
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 /* Organiza os elementos do formulário */
@@ -45,21 +45,23 @@
 .login-container input {
   padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input);
   border-radius: 4px;
 }
 
 /* Botão Entrar */
-.login-container button {
+.login-container button[type="submit"] {
   padding: 10px;
   border: none;
   border-radius: 4px;
-  background-color: #1f5f99;
-  color: white;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   cursor: pointer;
 }
 
 /* Efeito ao passar o mouse */
-.login-container button:hover {
-  background-color: #184b79;
+.login-container button[type="submit"]:hover {
+  background-color: color-mix(in srgb, var(--primary), var(--foreground) 15%);
 }
+.login-container { max-width: calc(100% - 32px); border: 1px solid var(--border); }
+.login-theme { display: flex; justify-content: flex-end; }

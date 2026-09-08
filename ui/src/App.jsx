@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import Login from './Login'
+import { ThemeToggle } from './components/ThemeToggle'
 import {
   Sidebar,
   SidebarProvider,
@@ -45,9 +46,9 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-const AZUL = { border: 'border-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-300' }
-const VERDE = { border: 'border-emerald-500', bg: 'bg-emerald-500/10', text: 'text-emerald-300' }
-const CINZA = { border: 'border-slate-500', bg: 'bg-slate-500/10', text: 'text-slate-300' }
+const AZUL = { border: 'border-course-blue', bg: 'bg-course-blue-bg', text: 'text-course-blue' }
+const VERDE = { border: 'border-course-green', bg: 'bg-course-green-bg', text: 'text-course-green' }
+const CINZA = { border: 'border-muted-foreground', bg: 'bg-muted', text: 'text-foreground' }
 
 const sidebarItems = [
   { title: 'Visão geral', icon: LayoutGrid, active: true },
@@ -242,19 +243,19 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1020] text-slate-100">
+    <div className="min-h-screen bg-background text-foreground">
       <SidebarProvider defaultOpen>
         <Sidebar
           collapsible="icon"
-          className="border-r border-slate-800 bg-[#101827] text-slate-200 shadow-2xl shadow-slate-950/40"
+          className="border-r border-border bg-sidebar text-foreground shadow-panel"
         >
-          <SidebarHeader className="border-b border-slate-800 px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
+          <SidebarHeader className="border-b border-border px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
             {/* Logo Chronac */}
             <div className="flex items-center justify-center gap-3 group-data-[collapsible=icon]:justify-center">
               <img 
                 src="/logo.png" 
                 alt="Chronac Logo"
-                className="h-16 object-contain group-data-[collapsible=icon]:hidden"
+                className="brand-logo h-16 object-contain group-data-[collapsible=icon]:hidden"
               />
               <img 
                 src="/logo_p.png" 
@@ -274,8 +275,8 @@ function App() {
                         isActive={active}
                         className={
                           active
-                            ? 'bg-blue-500/10 text-blue-200 hover:bg-blue-500/15 hover:text-blue-100 group-data-[collapsible=icon]:justify-center'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white group-data-[collapsible=icon]:justify-center'
+                            ? 'bg-course-blue-bg text-course-blue hover:bg-selected hover:text-selected-foreground group-data-[collapsible=icon]:justify-center'
+                            : 'text-foreground hover:bg-hover hover:text-foreground group-data-[collapsible=icon]:justify-center'
                         }
                       >
                         <Icon className="h-4 w-4" />
@@ -288,47 +289,50 @@ function App() {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-slate-800 p-3 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/70 p-2.5 text-left">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-300">
+          <SidebarFooter className="border-t border-border p-3 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center gap-3 rounded-lg border border-input bg-card p-2.5 text-left">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-course-green-bg text-course-green">
                 <Sparkles className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-medium text-white">Sistema ativo</div>
-                <div className="truncate text-[10px] text-slate-400">Sincronizado com a grade</div>
+                <div className="text-xs font-medium text-foreground">Sistema ativo</div>
+                <div className="truncate text-[10px] text-muted-foreground">Sincronizado com a grade</div>
               </div>
             </div>
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset className="bg-[#0b1020]">
-          <div className="flex items-center justify-between border-b border-slate-800 bg-[#101827]/80 px-4 py-3 backdrop-blur-sm">
+        <SidebarInset className="bg-background">
+          <div className="flex items-center justify-between border-b border-border bg-sidebar px-4 py-3 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="h-9 w-9 border border-slate-700 bg-slate-800/70 text-slate-200 hover:bg-slate-700" />
-              <div className="flex items-center gap-2 text-slate-200">
-                <CalendarDays className="h-4 w-4 text-blue-300" />
+              <SidebarTrigger className="h-9 w-9 border border-input bg-secondary text-foreground hover:bg-hover" />
+              <div className="flex items-center gap-2 text-foreground">
+                <CalendarDays className="h-4 w-4 text-course-blue" />
                 <span className="text-sm font-semibold tracking-wide">Cronograma Acadêmico</span>
               </div>
             </div>
 
-            <div className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            <div className="hidden sm:block rounded-full border border-success/40 bg-course-green-bg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-course-green">
               Versão beta
+            </div>
             </div>
           </div>
 
           <div className="p-5 md:p-7">
             <div id="debug-root" className="Calendar">
-              {error && <p className="error">Erro ao buscar /api/timetable: {error}</p>}
+              {error && <p className="error" role="alert">Erro ao buscar /api/timetable: {error}</p>}
 
               {data && (
                 <>
-                  <section className="mb-5 rounded-2xl border border-slate-800 bg-[#111827]/90 p-4 shadow-xl shadow-slate-950/30">
+                  <section className="mb-5 rounded-2xl border border-border bg-card p-4 shadow-panel">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                       <div className="flex flex-1 flex-col gap-3 md:flex-row md:flex-wrap">
                         <select
-                          value={teacherFilter}
+                          aria-label="Professor" value={teacherFilter}
                           onChange={(e) => setTeacherFilter(e.target.value)}
-                          className="min-w-[180px] flex-1 rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-blue-500"
+                          className="min-w-[180px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition focus:border-ring"
                         >
                           <option value="">Todos os professores</option>
                           {teacherOptions.map((t) => (
@@ -337,9 +341,9 @@ function App() {
                         </select>
 
                         <select
-                          value={subjectFilter}
+                          aria-label="Disciplina" value={subjectFilter}
                           onChange={(e) => setSubjectFilter(e.target.value)}
-                          className="min-w-[180px] flex-1 rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-blue-500"
+                          className="min-w-[180px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition focus:border-ring"
                         >
                           <option value="">Todas as disciplinas</option>
                           {subjectOptions.map((s) => (
@@ -348,9 +352,9 @@ function App() {
                         </select>
 
                         <select
-                          value={dayFilter}
+                          aria-label="Dia da semana" value={dayFilter}
                           onChange={(e) => setDayFilter(e.target.value)}
-                          className="min-w-[150px] flex-1 rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-blue-500"
+                          className="min-w-[150px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition focus:border-ring"
                         >
                           <option value="">Todos os dias</option>
                           {dayOptions.map((d) => (
@@ -359,9 +363,9 @@ function App() {
                         </select>
 
                         <select
-                          value={courseFilter}
+                          aria-label="Curso" value={courseFilter}
                           onChange={(e) => setCourseFilter(e.target.value)}
-                          className="min-w-[220px] flex-1 rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-blue-500"
+                          className="min-w-[220px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition focus:border-ring"
                         >
                           <option value="">Todos os cursos</option>
                           <option value="azul">Jovem Programador</option>
@@ -374,7 +378,7 @@ function App() {
                           type="button"
                           onClick={fetchTimetable}
                           disabled={loading}
-                          className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-200 transition hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-course-blue-bg px-3 py-2 text-sm font-medium text-course-blue transition hover:bg-selected disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                           {loading ? 'Carregando...' : 'Atualizar'}
@@ -382,7 +386,7 @@ function App() {
                         <button
                           type="button"
                           onClick={clearFilters}
-                          className="rounded-md border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
+                          className="rounded-md border border-input bg-secondary px-3 py-2 text-sm font-medium text-foreground transition hover:bg-hover"
                         >
                           Limpar filtro
                         </button>
@@ -390,55 +394,55 @@ function App() {
                     </div>
                   </section>
 
-                  <div className="w-full overflow-hidden rounded-2xl border border-slate-800 bg-[#0f111a] text-slate-200 shadow-xl shadow-slate-950/30">
-                    <div className="flex items-center justify-between border-b border-slate-800 bg-[#141724] p-4">
-                      <div className="flex items-center gap-2">
+                  <div className="w-full overflow-hidden rounded-2xl border border-border bg-card text-foreground shadow-panel">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-raised p-4">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={navegarPeriodoAnterior}
-                          className="h-8 w-8 border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
+                          aria-label="Período anterior" onClick={navegarPeriodoAnterior}
+                          className="h-8 w-8 border-input bg-secondary text-foreground hover:bg-hover"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={navegarProximoPeriodo}
-                          className="h-8 w-8 border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
+                          aria-label="Próximo período" onClick={navegarProximoPeriodo}
+                          className="h-8 w-8 border-input bg-secondary text-foreground hover:bg-hover"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           onClick={irParaHoje}
-                          className="h-8 border-slate-700 bg-slate-800/50 px-3 text-xs font-semibold text-white hover:bg-slate-800"
+                          className="h-8 border-input bg-secondary px-3 text-xs font-semibold text-foreground hover:bg-hover"
                         >
                           Hoje
                         </Button>
-                        <h2 className="ml-2 text-xl font-bold capitalize text-white">
+                        <h2 className="ml-2 text-xl font-bold capitalize text-foreground">
                           {viewType === 'month' && format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
                           {viewType === 'week' && `Semana de ${format(startOfWeek(currentMonth, { weekStartsOn: 0 }), 'd MMMM', { locale: ptBR })}`}
                           {viewType === 'day' && format(currentMonth, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </h2>
                       </div>
 
-                      <div className="flex gap-1 rounded-lg bg-slate-900 p-0.5 text-xs font-medium text-slate-400">
+                      <div className="flex gap-1 rounded-lg bg-muted p-0.5 text-xs font-medium text-muted-foreground">
                         <button 
-                          onClick={() => setViewType('month')}
-                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'month' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                          aria-pressed={viewType === 'month'} onClick={() => setViewType('month')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'month' ? 'bg-selected text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                           Mês
                         </button>
                         <button 
-                          onClick={() => setViewType('week')}
-                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'week' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                          aria-pressed={viewType === 'week'} onClick={() => setViewType('week')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'week' ? 'bg-selected text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                           Semana
                         </button>
                         <button 
-                          onClick={() => setViewType('day')}
-                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'day' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}
+                          aria-pressed={viewType === 'day'} onClick={() => setViewType('day')}
+                          className={`rounded-md px-3 py-1.5 font-semibold shadow-sm transition-colors ${viewType === 'day' ? 'bg-selected text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                           Dia
                         </button>
@@ -446,9 +450,9 @@ function App() {
                     </div>
 
                     {viewType !== 'day' && (
-                      <div className="grid grid-cols-7 border-b border-slate-800 bg-[#141724] text-left text-xs font-bold tracking-wider text-slate-400">
+                      <div className="grid grid-cols-7 border-b border-border bg-surface-raised text-left text-xs font-bold tracking-wider text-muted-foreground">
                         {diasDaSemana.map((d) => (
-                          <div key={d} className="border-r border-slate-800/50 p-3 last:border-r-0">
+                          <div key={d} className="border-r border-border p-3 last:border-r-0">
                             {d}
                           </div>
                         ))}
@@ -456,7 +460,7 @@ function App() {
                     )}
 
                     <div
-                      className={`grid gap-[1px] bg-slate-950 ${viewType === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}
+                      className={`grid gap-[1px] bg-border ${viewType === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}
                     >
                       {diasDoGrid.map((dia, idx) => {
                         const dataChave = format(dia, 'yyyy-MM-dd')
@@ -467,17 +471,17 @@ function App() {
                         return (
                           <div
                             key={idx}
-                            className="h-[140px] min-h-0 min-w-0 cursor-pointer border border-slate-900/40 bg-[#0f111a] p-2 transition-colors hover:bg-[#151926]"
+                            className="h-[140px] min-h-0 min-w-0 cursor-pointer border border-border bg-card p-2 transition-colors hover:bg-hover"
                             onClick={() => alert(`Ação para adicionar/gerenciar o dia: ${format(dia, 'dd/MM/yyyy')}`)}
                           >
                             <div className="mb-1 flex items-center justify-between">
                               <span
                                 className={`text-xs font-bold ${
                                   ehHoje
-                                    ? 'flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white'
+                                    ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground'
                                     : pertenceAoMesAtual
-                                      ? 'text-slate-300'
-                                      : 'text-slate-600'
+                                      ? 'text-foreground'
+                                      : 'text-muted-foreground'
                                 }`}
                               >
                                 {format(dia, 'd')}
@@ -493,17 +497,17 @@ function App() {
                                     className={`flex min-w-0 items-center gap-2 rounded-sm border-l-2 px-1.5 py-2.5 text-[10px] leading-tight shadow-sm transition-colors hover:opacity-80 ${cor.border} ${cor.bg} ${cor.text}`}
                                     title={`${aula.time} · ${aula.subject} · ${aula.room} · ${aula.teacher}`}
                                   >
-                                    <span className="shrink-0 font-bold text-slate-400">{aula.time?.split(' - ')[0] ?? '-'}</span>
-                                    <span className="min-w-0 truncate font-semibold text-slate-100">{aula.subject ?? 'Sem matéria'}</span>
-                                    <span className="shrink-0 text-slate-500">{aula.room ?? '-'}</span>
-                                    <span className="shrink-0 text-slate-500">{aula.teacher ?? '-'}</span>
+                                    <span className="shrink-0 font-bold text-muted-foreground">{aula.time?.split(' - ')[0] ?? '-'}</span>
+                                    <span className="min-w-0 truncate font-semibold text-foreground">{aula.subject ?? 'Sem matéria'}</span>
+                                    <span className="shrink-0 text-muted-foreground">{aula.room ?? '-'}</span>
+                                    <span className="shrink-0 text-muted-foreground">{aula.teacher ?? '-'}</span>
                                   </div>
                                 )
                               })}
                             </div>
 
                             {aulasDoDia.length > 3 && (
-                              <div className="mt-1 pl-1 text-[10px] font-bold text-blue-400">
+                              <div className="mt-1 pl-1 text-[10px] font-bold text-course-blue">
                                 + {aulasDoDia.length - 3} aulas
                               </div>
                             )}

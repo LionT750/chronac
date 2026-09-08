@@ -4,30 +4,8 @@
     width: 100%;
     text-align: left;
     box-sizing: border-box;
-    background-color:  oklch(29.882% 0.05511 274.034);
+    background-color:  var(--background);
     border-radius: 0.5%;
-}
-
-.Calendar button {
-  font: inherit;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--accent-bg);
-  color: var(--text-h);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  cursor: pointer;
-}
-
-.Calendar button:hover {
-.Calendar button:hover {
-  transform: scale(1.03);
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.Calendar button:active {
-.Calendar button:active {
-  transform: scale(0.97);
 }
 
 .Calendar .btn{
@@ -60,7 +38,7 @@
 .filters {
   display: flex;
   gap: 25px;
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 select {
@@ -70,7 +48,7 @@ select {
   background: var(--accent-bg);
   color: var(--text-h);
   gap: 25px;
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 select {
@@ -81,14 +59,14 @@ select {
   color: var(--text-h);
 }
 
-.Calendar button:disabled {
+
 .Calendar button:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
 .error {
-  color: #c0392b;
+  color: var(--destructive);
 }
 
 .summary {
@@ -173,3 +151,7 @@ header {
 
 
 
+
+.error { background: var(--destructive-bg); border: 1px solid var(--destructive); border-radius: 8px; padding: 12px; }
+tbody tr:hover { background: var(--hover); }
+@media (max-width: 767px) { .Calendar { padding: 8px; } }
