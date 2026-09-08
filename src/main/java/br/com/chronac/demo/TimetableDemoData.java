@@ -3,44 +3,40 @@ package br.com.chronac.demo;
 import br.com.chronac.domain.Room;
 import br.com.chronac.domain.TeacherSchedule;
 import br.com.chronac.domain.Timetable;
+import br.com.chronac.domain.Teacher;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Builds the exact same "MultiTurma Demo" problem that the legacy main() solved
- * and exposed via the raw HttpServer.
+ * and exposed via the raw HttpServer. Teacher schedule restrictions now come
+ * from the persisted {@link Teacher} rows (seeded by {@link TeacherDataSeeder})
+ * instead of being built inline.
  */
 public final class TimetableDemoData {
 
     private TimetableDemoData() {
     }
 
-    public static Timetable buildDemoProblem() {
-        TeacherSchedule nelmaSchedule = new TeacherSchedule("Nelma");
-        nelmaSchedule.addInvalidDayOfWeek(DayOfWeek.WEDNESDAY);
-        nelmaSchedule.addInvalidDayOfWeek(DayOfWeek.THURSDAY);
-
-        TeacherSchedule rodolfoSchedule = new TeacherSchedule("Rodolfo");
-        rodolfoSchedule.addInvalidDayOfWeek(DayOfWeek.FRIDAY);
-
-        TeacherSchedule vanessaSchedule = new TeacherSchedule("Vanessa");
-        vanessaSchedule.addUnavailableDateRange(LocalDate.of(2026, 9, 21), LocalDate.of(2026, 9, 30));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 2));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 9));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 7, 16));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 6));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 13));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 20));
-        vanessaSchedule.addSpecificUnavailableDate(LocalDate.of(2026, 8, 27));
+    public static Timetable buildDemoProblem(List<Teacher> teachers) {
+        List<TeacherSchedule> teacherSchedules = teachers.stream()
+                .map(TimetableDemoData::toTeacherSchedule)
+                .toList();
 
         return new Timetable.Builder(LocalDate.of(2026, 7, 23), LocalDate.of(2027, 3, 8))
                 .withName("MultiTurma Demo")
                 .withRooms(List.of(
                         new Room(Long.toString(1L), "Sala 114"),
                         new Room(Long.toString(2L), "Sala 115")))
-                .withTeacherSchedules(List.of(nelmaSchedule, rodolfoSchedule, vanessaSchedule))
+                .withTeacherSchedules(teacherSchedules)
                 .build();
+    }
+
+    private static TeacherSchedule toTeacherSchedule(Teacher teacher) {
+        TeacherSchedule schedule = new TeacherSchedule(teacher.getName());
+        teacher.getInvalidDayOfWeeks().forEach(schedule::addInvalidDayOfWeek);
+        teacher.getSpecificUnavailableDates().forEach(schedule::addSpecificUnavailableDate);
+        return schedule;
     }
 }
