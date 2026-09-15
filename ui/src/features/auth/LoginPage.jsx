@@ -1,33 +1,24 @@
-// Importa o useState para guardar os valores digitados
 import { useState } from 'react'
 
-// Importa os estilos da tela de login
 import './Login.css'
-import { ThemeToggle } from './components/ThemeToggle'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 
-function Login() {
-  // Guarda o e-mail digitado
+function LoginPage() {
   const [email, setEmail] = useState('')
 
-  // Guarda a senha digitada
   const [password, setPassword] = useState('')
 
-  // Executa quando o formulário é enviado
   function handleSubmit(event) {
-    // Impede que a página atualize
     event.preventDefault()
   }
 
   return (
-    // Área completa da tela de login
     <div className="login">
-      {/* Caixa do formulário */}
       <div className="login-container">
         <div className="login-theme"><ThemeToggle /></div>
         <h1>CHRONAC</h1>
         <p>Acesse sua conta</p>
 
-        {/* Formulário de login */}
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">E-mail</label>
 
@@ -58,4 +49,4 @@ function Login() {
   )
 }
 
-export default Login
+export default LoginPage
