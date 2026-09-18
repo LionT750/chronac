@@ -32,7 +32,7 @@ export default function CalendarView({ selectedDate, viewType, onViewChange, onP
 
   return (
     <>
-      <div className="w-full overflow-hidden rounded-2xl border border-border bg-card text-foreground shadow-panel">
+      <div className="calendar-surface w-full overflow-hidden rounded-2xl border border-border bg-card text-foreground shadow-panel">
         <CalendarToolbar selectedDate={selectedDate} viewType={viewType} onViewChange={onViewChange}
           onPrevious={onPrevious} onNext={onNext} onToday={onToday} />
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
@@ -46,10 +46,10 @@ export default function CalendarView({ selectedDate, viewType, onViewChange, onP
         {viewType !== 'day' && <p className="px-4 py-2 text-xs text-muted-foreground xl:hidden">Deslize a grade horizontalmente para consultar todos os dias.</p>}
         <div className="calendar-scroll" role="region" aria-label="Grade de aulas. Use Tab para acessar os dias e as setas para navegar entre eles." tabIndex={0} onKeyDown={navigateDays}>
           <div className={viewType === 'day' ? '' : 'calendar-six-days'}>
-            {viewType !== 'day' && <div className="grid grid-cols-6 border-b border-border bg-surface-raised text-xs font-semibold tracking-wide text-muted-foreground">
+            {viewType !== 'day' && <div className="calendar-weekdays grid grid-cols-6 border-b border-border bg-surface-raised text-xs font-semibold tracking-wide text-muted-foreground">
               {academicWeekdays.map((day) => <div key={day} className="px-3 py-3">{day}</div>)}
             </div>}
-            <div className={`grid gap-px bg-border ${viewType === 'day' ? 'grid-cols-1' : 'grid-cols-6'}`}>
+            <div className={`grid ${viewType === 'month' ? 'gap-1' : 'gap-px'} bg-border ${viewType === 'day' ? 'grid-cols-1' : 'grid-cols-6'}`}>
               {days.map((day) => <CalendarDayCell key={format(day, 'yyyy-MM-dd')} day={day} selectedDate={selectedDate}
                 lessons={lessonsByDate[format(day, 'yyyy-MM-dd')] ?? []} viewType={viewType} hasFilters={hasFilters}
                 onOpenDay={(date, trigger) => openDetails(date, null, trigger)} onOpenLesson={openDetails} />)}

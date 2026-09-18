@@ -19,7 +19,7 @@ export default function CalendarDayCell({ day, selectedDate, lessons, viewType, 
 
   return (
     <section aria-label={dateLabel} data-view={viewType} data-today={isToday}
-      className={`calendar-day flex min-w-0 flex-col gap-2 p-2.5 ${isCurrentMonth || viewType !== 'month' ? 'bg-card' : 'bg-muted/60'}`}>
+      className={`calendar-day flex min-w-0 flex-col gap-2 p-2.5 data-[view=month]:rounded-md ${isCurrentMonth || viewType !== 'month' ? 'bg-card' : 'bg-muted/60'}`}>
       <div className="flex min-h-9 shrink-0 items-center justify-between gap-1">
         <button type="button" data-calendar-day aria-current={isToday ? 'date' : undefined}
           aria-label={`Ver aulas de ${dateLabel}${isToday ? ', hoje' : ''}`} onClick={(event) => onOpenDay(day, event.currentTarget)}

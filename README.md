@@ -22,7 +22,7 @@ Tecnologias: Java 21, Spring Boot 3, Timefold Solver 2.2.0, Maven.
 3. Execute a aplicacao (Spring Boot):
 
    ```sh
-   java -jar target/chronac.jar
+   java -jar target/chronac.jar --spring.profiles.active=dev
    ```
 
 O build Maven compila automaticamente a UI (Vite/React) via `frontend-maven-plugin` e a empacota dentro do jar em `target/classes/static`. A UI fica disponivel em `http://localhost:8080` junto com a API (mesma origem, sem CORS).
@@ -60,6 +60,55 @@ npm run dev
 ```
 
 Chamadas cross-origin do dev server sao liberadas via CORS em `application.properties` (`chronac.cors.allowed-origins`, configuravel pela variavel `CHRONAC_CORS_ORIGINS`).
+
+## Autenticação
+
+A tela `/login` é obrigatória antes de montar as páginas do sistema. Todas as rotas
+`/api/**` exigem autenticação, exceto a obtenção de CSRF e o login. O calendário e a
+navegação interna continuam com a estrutura anterior.
+
+Para desenvolvimento local, execute:
+
+```sh
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+O perfil `dev` disponibiliza `admin123@senac.com` com a senha de teste `admin1234`.
+Somente o hash BCrypt (custo 12) fica na configuração do backend; nenhuma credencial
+é incorporada ao frontend. Sem esse perfil, não existe conta ou chave padrão.
+
+Para produção, configure no ambiente do backend:
+
+- `CHRONAC_ADMIN_EMAIL`: email do administrador.
+- `CHRONAC_ADMIN_PASSWORD_HASH`: hash BCrypt de custo 12 de uma senha própria
+  (máximo de 72 bytes UTF-8). Gere com `BCryptPasswordEncoder(12).encode(...)`,
+  preservando os caracteres `$` ao definir a variável no ambiente.
+- `CHRONAC_JWT_SECRET`: chave aleatória com no mínimo 32 bytes, codificada em Base64.
+  Mantenha a mesma chave entre reinicializações. Nunca use uma variável `VITE_*`.
+
+Execute sem o perfil `dev`, por HTTPS. Os cookies usam `Secure` por padrão;
+somente `dev` permite HTTP local. A aplicação recusa iniciar sem as configurações
+de produção. O perfil `dev` gera uma chave temporária quando não há chave configurada,
+portanto reiniciar o backend local encerra as sessões anteriores.
+
+O JWT dura 8 horas e é retornado por `Set-Cookie` com `HttpOnly`, `SameSite=Strict`
+e caminho `/api`. O navegador persiste a sessão; o frontend não usa localStorage
+nem recebe o token no JSON. Atualizar a página consulta `GET /api/auth/me`.
+`GET /api/auth/csrf` fornece o token CSRF, enviado no cabeçalho de login e logout.
+`POST /api/auth/login` recebe email/senha e retorna os dados públicos do usuário.
+`POST /api/auth/logout` revoga o JWT e remove o cookie.
+
+Os papéis `ADMIN`, `PROFESSOR` e `ALUNO` já existem no backend e são convertidos
+em autoridades `ROLE_*`. Apenas a conta administrativa inicial é disponibilizada;
+cadastro de usuários e regras de acesso específicas por perfil ficam para a próxima etapa.
+O projeto ainda não tem banco: o usuário inicial vem da configuração do servidor.
+A lista de tokens revogados fica em memória; para múltiplas instâncias ou revogação
+durável após reinícios, migre essa lista para armazenamento compartilhado persistente.
+
+Validação: `mvn test`, `cd ui && npm test` e `npm run build`.
+
+Referências: [JWT no Spring Security](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html)
+e [proteção CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html).
 
 ## Git workflow
 

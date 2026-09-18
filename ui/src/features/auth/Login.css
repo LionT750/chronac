@@ -65,3 +65,11 @@
 }
 .login-container { max-width: calc(100% - 32px); border: 1px solid var(--border); }
 .login-theme { display: flex; justify-content: flex-end; }
+.login { padding-block: 24px; }
+.login-container { width: 400px; border-radius: 16px; }
+.login-container h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: 0.08em; }
+.login-container input { background: var(--background); color: var(--foreground); border-radius: 8px; }
+.login-container input:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.login-container button[type="submit"] { border-radius: 8px; font-weight: 600; }
+.login-container button[type="submit"]:disabled { cursor: wait; opacity: 0.65; }
+.login-container .login-error { color: var(--destructive); font-size: 0.875rem; text-align: left; }

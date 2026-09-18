@@ -1,6 +1,9 @@
+// Carga inicial dos nomes de Curriculum.java; códigos oficiais ainda não informados.
 export const teachers = [
-  { id: 'teacher-1', name: 'Ana Martins', code: 'PROF-001' },
-  { id: 'teacher-2', name: 'Bruno Costa', code: 'PROF-002' },
+  { id: 'teacher-alisson', name: 'Alisson', code: '' },
+  { id: 'teacher-nelma', name: 'Nelma', code: '' },
+  { id: 'teacher-rodolfo', name: 'Rodolfo', code: '' },
+  { id: 'teacher-vanessa', name: 'Vanessa', code: '' },
 ]
 
 export const classes = [

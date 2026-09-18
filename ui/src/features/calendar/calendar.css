@@ -30,3 +30,43 @@
   box-shadow: inset 0 0 0 2px var(--primary);
   background: color-mix(in srgb, var(--card), var(--primary) 4%);
 }
+
+/* Refinamento do calendário claro; o tema escuro mantém sua paleta atual. */
+:root:not(.dark) #debug-root.Calendar {
+  --foreground: #20334f;
+  --muted-foreground: #53637a;
+  --border: #dfe6ef;
+  --input: #c7d2e1;
+  --secondary: #ffffff;
+  --surface-raised: #f8fafd;
+  --muted: #f1f4f9;
+  --hover: #eaf1fb;
+  --selected: #dce9ff;
+  --course-blue-bg: #edf4ff;
+  --course-green-bg: #edf8f2;
+}
+
+:root:not(.dark) .calendar-surface {
+  box-shadow: 0 4px 18px #243b640c;
+}
+
+:root:not(.dark) .calendar-filter {
+  background: #f8fafd;
+}
+
+:root:not(.dark) .calendar-filter:focus {
+  background: #ffffff;
+  border-color: var(--ring);
+}
+
+:root:not(.dark) .calendar-weekdays {
+  background: #eef3f9;
+  color: #405571;
+}
+
+:root:not(.dark) .calendar-day[data-outside-month="true"] {
+  background: #f1f4f9;
+  border-color: transparent;
+  border-radius: 0;
+  opacity: 1;
+}
