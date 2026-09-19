@@ -1,0 +1,75 @@
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { margin: 0; @apply bg-background text-foreground; }
+  #root { width: 100%; box-sizing: border-box; }
+  h1, h2 { color: var(--foreground); font-weight: 500; }
+  h1 { font-size: 56px; letter-spacing: -1.68px; margin: 32px 0; }
+  h2 { font-size: 24px; line-height: 118%; margin: 0 0 8px; }
+  p { margin: 0; }
+  button:not(:disabled) { cursor: pointer; }
+  :is(button, select, input, [tabindex]):focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  :is(input, select) { background: var(--card); color: var(--foreground); }
+  ::placeholder { color: var(--muted-foreground); opacity: 1; }
+  ::selection { background: var(--selected); color: var(--selected-foreground); }
+  :is(input, select)[aria-invalid="true"] { border-color: var(--destructive); }
+  :is(button, input, select):disabled { opacity: 0.6; cursor: not-allowed; }
+  @media (max-width: 1024px) {
+    :root { font-size: 16px; }
+    h1 { font-size: 36px; margin: 20px 0; }
+    h2 { font-size: 20px; }
+  }
+}
+
+.brand-logo { background: var(--brand-surface); border-radius: 8px; padding: 4px 8px; }
+
+/* Os seletores globais legados mantêm a especificidade atual durante a reorganização. */
+select {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  gap: 25px;
+  color: var(--foreground);
+}
+
+select {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.error {
+  color: var(--destructive);
+}
+
+details {
+  margin-top: 24px;
+}
+
+pre {
+  overflow: auto;
+  max-height: 400px;
+  background: var(--code-bg);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.error { background: var(--destructive-bg); border: 1px solid var(--destructive); border-radius: 8px; padding: 12px; }

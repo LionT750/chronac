@@ -1,0 +1,56 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.registration-page table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.registration-page th {
+  padding: 0.75rem 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.registration-page td {
+  padding: 0.875rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.registration-page tbody tr:first-child td {
+  border-top-color: transparent;
+}
+
+.registration-page tbody tr:hover {
+  background: color-mix(in srgb, var(--hover), var(--card) 35%);
+}
+
+@media (max-width: 767px) {
+  .registration-page {
+    padding: 0;
+  }
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: var(--code-bg);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--code-bg);
+}
+
+tbody tr:hover { background: var(--hover); }
