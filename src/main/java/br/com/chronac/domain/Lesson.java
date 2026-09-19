@@ -12,7 +12,6 @@ public class Lesson {
     private String id;
 
     private Subject subject;
-    private Subject subject;
 
     @PlanningVariable
     private Timeslot timeslot;
@@ -26,14 +25,12 @@ public class Lesson {
     }
 
     public Lesson(String id, Subject subject) {
-    public Lesson(String id, Subject subject) {
         this.id = id;
         this.subject = subject;
     }
 
     @Override
     public String toString() {
-        return subject.getName() + "(" + id + ")";
         return subject.getName() + "(" + id + ")";
     }
 
@@ -47,21 +44,15 @@ public class Lesson {
     }
 
     public Subject getSubject() {
-    public Subject getSubject() {
         return subject;
     }
 
     public String getTeacher() {
         return subject.getTeacher();
-        return subject.getTeacher();
     }
 
     public Timeslot getTimeslot() {
         return timeslot;
-    }
-
-    public Room getRoom() {
-        return room;
     }
 
     // ************************************************************************
