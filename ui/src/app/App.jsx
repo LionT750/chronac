@@ -7,6 +7,7 @@ import CalendarPage from '@/features/calendar/CalendarPage'
 import { useAcademicRegistrations } from '@/features/registrations/hooks/useAcademicRegistrations'
 import { useTimetable } from '@/features/calendar/hooks/useTimetable'
 import { useCalendarState } from '@/features/calendar/hooks/useCalendarState'
+import LandingPage from '@/features/landing/LandingPage'
 
 function AuthenticatedApp({ onLogout, loggingOut }) {
   const [page, setPage] = useState('calendar')
@@ -25,5 +26,6 @@ function AuthenticatedApp({ onLogout, loggingOut }) {
 }
 
 export default function App() {
+  if (/^\/chronac\/?$/.test(window.location.pathname)) return <LandingPage />
   return <AuthGate component={AuthenticatedApp} />
 }

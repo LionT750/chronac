@@ -61,6 +61,21 @@ npm run dev
 
 Chamadas cross-origin do dev server sao liberadas via CORS em `application.properties` (`chronac.cors.allowed-origins`, configuravel pela variavel `CHRONAC_CORS_ORIGINS`).
 
+## Site institucional
+
+A apresentação pública do Chronac está em `/chronac` (também aceita `/chronac/`).
+Em desenvolvimento, acesse `http://localhost:5173/chronac` após executar `npm run dev`
+na pasta `ui`. No pacote Spring Boot, a mesma rota é servida em `http://localhost:8080/chronac`.
+
+A aplicação autenticada permanece em `/`, com `/login` e `/calendar` preservados.
+Os botões do site levam ao login existente. A landing page não monta o `AuthGate`
+nem consulta a API. O calendário público reutiliza `CalendarView` e `LessonCard`,
+com dados fictícios locais, navegação de períodos e filtro por curso. Os estilos
+ficam restritos a `.landing-page`; o tema utiliza o `ThemeProvider` existente.
+
+Os componentes e textos estão em `ui/src/features/landing/`. A interface pública
+explicita o estágio beta e a evolução das permissões específicas por perfil.
+
 ## Autenticação
 
 A tela `/login` é obrigatória antes de montar as páginas do sistema. Todas as rotas

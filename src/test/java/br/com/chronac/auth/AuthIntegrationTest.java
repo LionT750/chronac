@@ -39,6 +39,14 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void publicLandingAndExistingSpaRoutesRemainAvailableWithoutSession() throws Exception {
+        for (String path : new String[]{"/chronac", "/chronac/", "/login", "/calendar"}) {
+            mvc.perform(get(path)).andExpect(status().isOk()).andExpect(forwardedUrl("/index.html"));
+        }
+        mvc.perform(get("/api/timetable")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void rejectsWrongCredentialsAndMalformedInputs() throws Exception {
         mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json")
                 .content(credentials("wrong"))).andExpect(status().isUnauthorized());
