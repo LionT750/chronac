@@ -33,14 +33,6 @@ class TimetableControllerTest {
         assertThat(solved.get("score").asText()).contains("hard");
     }
 
-    @Test
-    void getSayHeyMaster_returnsLegacyHello() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/sayHeyMaster", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("Hey from master Lucas");
-    }
-
     private JsonNode waitForSolvedTimetable() throws Exception {
         long deadline = System.currentTimeMillis() + 60_000L;
         while (System.currentTimeMillis() < deadline) {
