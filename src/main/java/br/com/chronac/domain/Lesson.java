@@ -1,5 +1,6 @@
 package br.com.chronac.domain;
 
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
@@ -11,6 +12,7 @@ public class Lesson {
     private String id;
 
     private Subject subject;
+    private Subject subject;
 
     @PlanningVariable
     private Timeslot timeslot;
@@ -19,9 +21,11 @@ public class Lesson {
     private Room room;
 
     // Required by Timefold
+    // Required by Timefold
     public Lesson() {
     }
 
+    public Lesson(String id, Subject subject) {
     public Lesson(String id, Subject subject) {
         this.id = id;
         this.subject = subject;
@@ -30,9 +34,11 @@ public class Lesson {
     @Override
     public String toString() {
         return subject.getName() + "(" + id + ")";
+        return subject.getName() + "(" + id + ")";
     }
 
     // ************************************************************************
+    // Getters
     // Getters
     // ************************************************************************
 
@@ -41,16 +47,26 @@ public class Lesson {
     }
 
     public Subject getSubject() {
+    public Subject getSubject() {
         return subject;
     }
 
     public String getTeacher() {
+        return subject.getTeacher();
         return subject.getTeacher();
     }
 
     public Timeslot getTimeslot() {
         return timeslot;
     }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    // ************************************************************************
+    // Setters
+    // ************************************************************************
 
     public Room getRoom() {
         return room;

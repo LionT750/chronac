@@ -10,7 +10,6 @@ public class Curriculum {
 
     public Map<String, Subject> subjects;
     private Map<String, TeacherSchedule> teacherSchedules = new HashMap<>();
-
     Curriculum() {
         this.subjects = Map.ofEntries(
                 Map.entry("UC1", new Subject("UC1", 32, "Vanessa", LocalDate.of(2026, 7,22), LocalDate.of(2026, 12, 13), List.of("Sala 115"),
