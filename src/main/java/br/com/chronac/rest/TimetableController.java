@@ -25,9 +25,4 @@ public class TimetableController {
         return timetableDemoSolver.getBestSolution();
     }
 
-    @GetMapping("/sayHeyMaster")
-    public String sayHeyMaster() throws JsonProcessingException {
-        // Keep the legacy payload: a JSON string, so the UI can consume it with response.json().
-        return objectMapper.writeValueAsString("Hey from master Lucas");
-    }
 }
