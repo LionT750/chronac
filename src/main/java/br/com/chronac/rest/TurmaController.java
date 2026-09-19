@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/turmas")
+@RequestMapping("/api/v2/turmas")
 public class TurmaController {
 
     private final TurmaService turmaService;
