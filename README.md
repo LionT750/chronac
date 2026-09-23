@@ -49,6 +49,8 @@ O score e serializado no formato padrao do Timefold como string, ex.: `"0hard/-3
 
 ## Frontend (UI)
 
+O guia do frontend está em [ui/README.md](ui/README.md), com links para o estado atual, o histórico de entregas e os próximos passos.
+
 A UI React/Vite e compilada automaticamente durante o `mvn package` e servida pelo proprio Spring Boot em `http://localhost:8080` (sem precisar de servidor separado).
 
 Para desenvolver com hot reload, rode a UI separadamente em `http://localhost:5173` (o `/api` e proxiado pelo Vite para `http://localhost:8080`):

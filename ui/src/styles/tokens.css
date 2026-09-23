@@ -15,6 +15,8 @@
   --destructive-bg: #fff0ee;
   --success: #047857;
   --success-bg: #e6f5ee;
+  --warning: #92400e;
+  --warning-bg: #fff3d6;
   --border: #dce3ed;
   --input: #b9c6d7;
   --ring: #2563eb;
@@ -48,6 +50,8 @@
   --destructive-bg: #381e27;
   --success: #6ee7b7;
   --success-bg: #12352f;
+  --warning: #fcd34d;
+  --warning-bg: #352a16;
   --border: #293449;
   --input: #475569;
   --ring: #60a5fa;
@@ -141,6 +145,8 @@
   --color-selected-foreground: var(--selected-foreground);
   --color-success: var(--success);
   --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
   --color-course-blue: var(--course-blue);
   --color-course-blue-bg: var(--course-blue-bg);
   --color-course-green: var(--course-green);

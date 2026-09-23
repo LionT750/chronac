@@ -4,10 +4,13 @@ import LoginPage from './LoginPage'
 import { currentUser, login, logout } from './authService'
 
 function navigate(path) {
-  if (window.location.pathname !== path) window.history.replaceState(null, '', path)
+  if (window.location.pathname !== path) {
+    window.history.replaceState(null, '', path)
+    window.dispatchEvent(new Event('chronac:navigate'))
+  }
 }
 
-export default function AuthGate({ component: Component }) {
+export default function AuthGate({ component: Component, componentProps }) {
   const [session, setSession] = useState({ loading: true, user: null, error: '' })
   const [attempt, setAttempt] = useState(0)
   const [leaving, setLeaving] = useState(false)
@@ -92,6 +95,6 @@ export default function AuthGate({ component: Component }) {
   if (!session.user) return <LoginPage onLogin={signIn} />
   return <>
     {logoutError && <p role="alert" className="bg-destructive/10 p-3 text-center text-sm text-destructive">{logoutError}</p>}
-    <Component user={session.user} onLogout={signOut} loggingOut={leaving} />
+    <Component {...componentProps} user={session.user} onLogout={signOut} loggingOut={leaving} />
   </>
 }
