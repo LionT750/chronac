@@ -18,5 +18,29 @@ public class ApplicationExceptionHandler {
         .body(e.getMessage())
         ;
 
-    } 
+    }
+
+    @ExceptionHandler(DuplicateGenerationException.class)
+    public ResponseEntity<String> handleDuplicateGeneration(DuplicateGenerationException e){
+        return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(e.getMessage())
+        ;
+    }
+
+    @ExceptionHandler(UnknownDemoException.class)
+    public ResponseEntity<String> handleUnknownDemo(UnknownDemoException e){
+        return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(e.getMessage())
+        ;
+    }
+
+    @ExceptionHandler(UnknownJobException.class)
+    public ResponseEntity<String> handleUnknownJob(UnknownJobException e){
+        return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(e.getMessage())
+        ;
+    }
 }
