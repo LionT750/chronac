@@ -36,6 +36,13 @@ A aplicacao sobe em `http://localhost:8080`:
 - `GET /api/timetable` -- retorna o timetable (problema + melhor solucao encontrada ate o momento) em JSON.
 - `GET /api/sayHeyMaster` -- endpoint de demonstracao do servidor legado.
 
+### Geracao de cronograma em tempo real (v2)
+
+- `POST /api/v2/timetable/generate` -- inicia uma geracao de cronograma e retorna `202` com `{ "jobId", "status" }`. O body e um DTO basico com o identificador do demo (`{ "demo": "MULTI_TURMA_DEMO" }`); no futuro carregara os dados/metadata completos do problema. Uma geracao ativa por usuario: nova chamada enquanto a anterior roda retorna `409`.
+- `GET /api/v2/timetable/generate/{jobId}/stream` -- abre um stream `text/event-stream` com a geracao. Cada evento e um snapshot completo da melhor solucao ate entao (mesmo formato de `GET /api/timetable`), enviado a cada melhoria de score (limitado a 1 evento/100ms, configuravel em `chronac.generation.stream-throttle-ms`). O stream fecha quando a geracao termina.
+
+O stream pode ser fechado e reaberto a qualquer momento com o mesmo `jobId` (o usuario pode trocar de aba e voltar): o snapshot mais recente e enviado imediatamente ao reanexar, e a geracao continua rodando no servidor mesmo sem clientes conectados. Estado em memoria: jobs sao perdidos no restart e nao sao compartilhados entre instancias.
+
 O score e serializado no formato padrao do Timefold como string, ex.: `"0hard/-3soft"`.
 
 ## Estrutura do projeto
