@@ -4,9 +4,11 @@ import AuthGate from '@/features/auth/AuthGate'
 import TeacherPage from '@/features/registrations/pages/TeacherPage'
 import ClassPage from '@/features/registrations/pages/ClassPage'
 import CalendarPage from '@/features/calendar/CalendarPage'
+import GenerationPage from '@/features/generation/GenerationPage'
 import { useAcademicRegistrations } from '@/features/registrations/hooks/useAcademicRegistrations'
 import { useTimetable } from '@/features/calendar/hooks/useTimetable'
 import { useCalendarState } from '@/features/calendar/hooks/useCalendarState'
+import { useGeneration } from '@/features/generation/hooks/useGeneration'
 import LandingPage from '@/features/landing/LandingPage'
 
 function AuthenticatedApp({ onLogout, loggingOut }) {
@@ -15,12 +17,16 @@ function AuthenticatedApp({ onLogout, loggingOut }) {
   const registrations = useAcademicRegistrations()
   const timetable = useTimetable()
   const calendarState = useCalendarState(timetable.data)
+  // A geração roda no App para que o stream e os toasts de feedback funcionem
+  // mesmo quando o usuário está em outra página.
+  const generation = useGeneration()
 
   return (
     <AppLayout page={page} onNavigate={setPage} onLogout={onLogout} loggingOut={loggingOut} systemStatus={timetable.error ? 'error' : timetable.loading ? 'loading' : timetable.data ? 'ready' : 'idle'}>
       {page === 'teachers' && <TeacherPage {...registrations.teachers} />}
       {page === 'classes' && <ClassPage {...registrations.classes} />}
       {page === 'calendar' && <CalendarPage {...timetable} {...calendarState} />}
+      {page === 'generation' && <GenerationPage generation={generation} />}
     </AppLayout>
   )
 }

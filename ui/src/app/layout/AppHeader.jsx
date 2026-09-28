@@ -10,7 +10,7 @@ export default function AppHeader({ page, onLogout, loggingOut }) {
         <SidebarTrigger className="h-9 w-9 border border-input bg-secondary text-foreground hover:bg-hover" />
         <div className="flex items-center gap-2 text-foreground">
           <CalendarDays className="h-4 w-4 text-course-blue" />
-          <span className="text-sm font-semibold tracking-wide">{page === 'teachers' ? 'Professores' : page === 'classes' ? 'Turmas' : 'Cronograma Acadêmico'}</span>
+          <span className="text-sm font-semibold tracking-wide">{page === 'teachers' ? 'Professores' : page === 'classes' ? 'Turmas' : page === 'generation' ? 'Gerar grade' : 'Cronograma Acadêmico'}</span>
         </div>
       </div>
 
