@@ -271,10 +271,20 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         .asConstraint("Compact schedule");
         }
 
-    // -------------------------
-    // SOFT CONSTRAINTS
-    // -------------------------
+        Constraint pivot(ConstraintFactory factory) {
+                return factory.forEach(Lesson.class)
+                        .groupBy(Lesson::getTeacher, ConstraintCollectors.count())
+                        .filter((professor, contagem) -> contagem > 3)
+                        .penalize(HardSoftScore.ONE_SOFT)
+                        .asConstraint("Muitos dias em um professor.");
 
+        }
 
-
+        Constraint ini(ConstraintFactory factory) {
+                return factory.forEach(Subject.class)
+                .groupBy(Subject::getStartDate, ConstraintCollectors.count())
+                .filter((unidade, contagem) -> contagem > 1)
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Unidade não pode iniciar ainda.");
+        }
 }
