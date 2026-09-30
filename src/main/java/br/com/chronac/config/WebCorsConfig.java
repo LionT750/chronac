@@ -34,7 +34,9 @@ public class WebCorsConfig {
         configuration.setAllowCredentials(true);
 
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        // Only the API is called cross-origin (Vite dev server). The static UI is always
+        // same-origin, so CORS checks there only reject its crossorigin script/link tags.
+        source.registerCorsConfiguration("/api/**", configuration);
 
         return source;
     }
